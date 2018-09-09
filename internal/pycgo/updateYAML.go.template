@@ -21,8 +21,8 @@
 package pycgo
 
 /*
-#cgo CFLAGS: -I<path-to-dir-that-has-python-header-file>
-#cgo LDFLAGS: -L<path-to-dir-that-has-python-lib> -l<name-of-python-lib>
+#cgo CFLAGS: <cflags>
+#cgo LDFLAGS: <ldflags>
 
 #include <stdlib.h>
 
