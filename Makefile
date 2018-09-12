@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-.PHONY: all clean test pythontest gotest build upx
+.PHONY: all clean mrproper test pythontest gotest build upx
 
 os := $(shell uname | tr '[:upper:]' '[:lower:]')
 arch := $(shell uname -m | sed 's/x86_64/amd64/')
@@ -29,23 +29,34 @@ clean:
 	go clean -i -r -cache
 	rm -rf internal/pycgo/updateYAML.c internal/pycgo/updateYAML.go internal/pycgo/__pycache__ binaries
 
-internal/pycgo/updateYAML.c: internal/pycgo/updateYAML.py
-	cython -3 --embed=updateYAML --output-file internal/pycgo/updateYAML.c internal/pycgo/updateYAML.py
-
-internal/pycgo/updateYAML.go: internal/pycgo/updateYAML.go.template
-	@scripts/createGoSourceFileFromTemplate.sh
-
-test: pythontest gotest
-
-pythontest:
-	python3 internal/pycgo/updateYAML_test.py
+mrproper: clean
+	rm -rf third_party
 
 gotest:
 	ginkgo -r --nodes 1 --randomizeAllSpecs --randomizeSuites --race --trace
 
-build: internal/pycgo/updateYAML.c internal/pycgo/updateYAML.go
+pythontest: third_party/lib/python
+	third_party/lib/python/bin/python3 internal/pycgo/updateYAML_test.py
+
+test: gotest pythontest
+
+third_party/lib/python:
+	@scripts/compilePythonLibrary.sh
+
+internal/pycgo/updateYAML.c: third_party/lib/python internal/pycgo/updateYAML.py
+	$${HOME}/.local/bin/cython -3 --embed=updateYAML --output-file internal/pycgo/updateYAML.c internal/pycgo/updateYAML.py
+
+internal/pycgo/updateYAML.go: third_party/lib/python internal/pycgo/updateYAML.go.template
+	@scripts/createGoSourceFileFromTemplate.sh
+
+build: third_party/lib/python internal/pycgo/updateYAML.c internal/pycgo/updateYAML.go
 	@mkdir -p binaries
-	go build -a -ldflags='-s -w' -o binaries/ytbx-$(os)-$(arch) cmd/ytbx/main.go
+	go build -ldflags='-s -w' -o binaries/ytbx-$(os)-$(arch) cmd/ytbx/main.go
+	@echo
+	@ls -lh binaries/ytbx-$(os)-$(arch)
+	@echo
+	@bash -c 'if [[ "$(os)" == "linux" ]]; then readelf -d binaries/ytbx-$(os)-$(arch); fi'
+	@bash -c 'if [[ "$(os)" == "darwin" ]]; then otool -L binaries/ytbx-$(os)-$(arch); fi'
 
 upx: build
 	upx -q binaries/ytbx-$(os)-$(arch)
