@@ -24,7 +24,7 @@ import (
 	"fmt"
 
 	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
-	"github.com/HeavyWombat/dyff/pkg/v1/neat"
+	"github.com/HeavyWombat/gonvenience/pkg/v1/neat"
 	"github.com/spf13/cobra"
 )
 
