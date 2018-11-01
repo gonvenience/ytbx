@@ -8,11 +8,8 @@ go:
 
 os:
 - linux
-- osx
 
 install:
-- if [[ "$(uname)" == "Linux" ]]; then sudo apt-get update >/dev/null && sudo apt-get install -y build-essential libssl-dev libffi-dev zlib1g-dev; fi
-- if [[ "$(uname)" == "Darwin" ]]; then brew update >/dev/null && brew install jq && ( brew outdated openssl || brew upgrade openssl ); fi
 - curl --silent --location https://goo.gl/g1CpPX | bash -s v1.0.2
 
 script:

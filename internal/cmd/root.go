@@ -24,22 +24,19 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
-
-	"github.com/HeavyWombat/dyff/pkg/v1/neat"
-
-	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
+	"github.com/spf13/cobra"
 
 	"github.com/HeavyWombat/dyff/pkg/v1/bunt"
-	"github.com/spf13/cobra"
+	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
+	"github.com/HeavyWombat/dyff/pkg/v1/neat"
+	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ytbx",
 	Short: "YAML tool box",
-	Long: `YAML tool box provides a set of commands to inspect, display, or modify
-the content of a given YAML or JSON file.`,
+	Long:  `YAML tool box provides a set of commands to work with the content of a given YAML or JSON file.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

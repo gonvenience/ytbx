@@ -18,45 +18,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-.PHONY: all clean mrproper test pythontest gotest build upx
+.PHONY: all clean test gobin build upx
 
-os := $(shell uname | tr '[:upper:]' '[:lower:]')
-arch := $(shell uname -m | sed 's/x86_64/amd64/')
+version := $(shell git describe --tags --abbrev=0 2>/dev/null || (git rev-parse HEAD | cut -c-8))
+sources := $(wildcard cmd/ytbx/*.go internal/cmd/*.go pkg/v1/ytbx/*.go)
 
 all: test
 
 clean:
 	go clean -i -r -cache
-	rm -rf internal/pycgo/updateYAML.c internal/pycgo/updateYAML.go internal/pycgo/__pycache__ binaries
+	rm -rf binaries
 
-mrproper: clean
-	rm -rf third_party
-
-gotest:
+test:
 	ginkgo -r --nodes 1 --randomizeAllSpecs --randomizeSuites --race --trace
 
-pythontest: third_party/lib/python
-	third_party/lib/python/bin/python3 internal/pycgo/updateYAML_test.py
+gobin:
+	go build -ldflags='-s -w -extldflags "-static"' -o ${GOPATH}/bin/ytbx cmd/ytbx/main.go
 
-test: gotest pythontest
+build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64
 
-third_party/lib/python:
-	@scripts/compilePythonLibrary.sh
+binaries/ytbx-linux-amd64: $(sources)
+	GOOS=linux GOARCH=amd64 go build -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-linux-amd64 cmd/ytbx/main.go
 
-internal/pycgo/updateYAML.c: third_party/lib/python internal/pycgo/updateYAML.py
-	$${HOME}/.local/bin/cython -3 --embed=updateYAML --output-file internal/pycgo/updateYAML.c internal/pycgo/updateYAML.py
+binaries/ytbx-darwin-amd64: $(sources)
+	GOOS=darwin GOARCH=amd64 go build -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-darwin-amd64 cmd/ytbx/main.go
 
-internal/pycgo/updateYAML.go: third_party/lib/python internal/pycgo/updateYAML.go.template
-	@scripts/createGoSourceFileFromTemplate.sh
-
-build: third_party/lib/python internal/pycgo/updateYAML.c internal/pycgo/updateYAML.go
-	@mkdir -p binaries
-	go build -ldflags='-s -w' -o binaries/ytbx-$(os)-$(arch) cmd/ytbx/main.go
-	@echo
-	@ls -lh binaries/ytbx-$(os)-$(arch)
-	@echo
-	@bash -c 'if [[ "$(os)" == "linux" ]]; then readelf -d binaries/ytbx-$(os)-$(arch); fi'
-	@bash -c 'if [[ "$(os)" == "darwin" ]]; then otool -L binaries/ytbx-$(os)-$(arch); fi'
-
-upx: build
-	upx -q binaries/ytbx-$(os)-$(arch)
+binaries/ytbx-windows-amd64: $(sources)
+	GOOS=windows GOARCH=amd64 go build -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-windows-amd64 cmd/ytbx/main.go
