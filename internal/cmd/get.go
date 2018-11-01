@@ -23,8 +23,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
 	"github.com/HeavyWombat/gonvenience/pkg/v1/neat"
+	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
 	"github.com/spf13/cobra"
 )
 
@@ -64,12 +64,12 @@ func init() {
 // path. There are two types of path supported: A dot-style path
 // (yaml.structure.one) and GoPatch-style paths (/yaml/structure/name=one).
 func get(location string, pathString string) (interface{}, error) {
-	inputfile, err := dyff.LoadFile(location)
+	inputfile, err := ytbx.LoadFile(location)
 	if err != nil {
 		return nil, err
 	}
 
-	content, err := dyff.Grab(inputfile.Documents[0], pathString)
+	content, err := ytbx.Grab(inputfile.Documents[0], pathString)
 	if err != nil {
 		return nil, err
 	}

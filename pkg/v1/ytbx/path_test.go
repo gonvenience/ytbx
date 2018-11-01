@@ -21,7 +21,6 @@
 package ytbx_test
 
 import (
-	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -29,7 +28,7 @@ import (
 )
 
 func getExampleDocument() interface{} {
-	input, err := dyff.LoadFile(assetsDirectory + "/testbed/example.yml")
+	input, err := LoadFile(assetsDirectory + "/testbed/example.yml")
 	Expect(err).To(BeNil())
 	Expect(len(input.Documents)).To(BeIdenticalTo(1))
 

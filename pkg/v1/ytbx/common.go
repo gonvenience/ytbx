@@ -21,8 +21,71 @@
 package ytbx
 
 import (
+	"reflect"
+
 	yaml "gopkg.in/yaml.v2"
 )
+
+// Internal string constants for type names and type decisions
+const (
+	typeMap         = "map"
+	typeSimpleList  = "list"
+	typeComplexList = "complex-list"
+	typeString      = "string"
+)
+
+// GetType returns the type of the input value with a YAML specific view
+func GetType(value interface{}) string {
+	switch value.(type) {
+	case yaml.MapSlice:
+		return typeMap
+
+	case []interface{}:
+		if IsComplexSlice(value.([]interface{})) {
+			return typeComplexList
+		}
+
+		return typeSimpleList
+
+	case []yaml.MapSlice:
+		return typeComplexList
+
+	case string:
+		return typeString
+
+	default:
+		return reflect.TypeOf(value).Kind().String()
+	}
+}
+
+// IsComplexSlice returns whether the slice contains (hash)map entries, otherwise the slice is called a simple list.
+func IsComplexSlice(slice []interface{}) bool {
+	// This is kind of a weird case, but by definition an empty list is a simple slice
+	if len(slice) == 0 {
+		return false
+	}
+
+	// Count the number of entries which are maps or YAML MapSlices
+	counter := 0
+	for _, entry := range slice {
+		switch entry.(type) {
+		case map[string]interface{}, map[interface{}]interface{}, yaml.MapSlice:
+			counter++
+		}
+	}
+
+	return counter == len(slice)
+}
+
+// SimplifyList will cast a slice of YAML MapSlices into a slice of interfaces.
+func SimplifyList(input []yaml.MapSlice) []interface{} {
+	result := make([]interface{}, len(input))
+	for i := range input {
+		result[i] = input[i]
+	}
+
+	return result
+}
 
 func isList(obj interface{}) bool {
 	switch obj.(type) {

@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -115,7 +114,7 @@ func NewPathWithIndexedListElement(path Path, idx int) Path {
 }
 
 func ListPaths(location string, style PathStyle) ([]Path, error) {
-	inputfile, err := dyff.LoadFile(location)
+	inputfile, err := LoadFile(location)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +134,7 @@ func ListPaths(location string, style PathStyle) ([]Path, error) {
 func traverseTree(path Path, obj interface{}, leafFunc func(path Path, value interface{})) {
 	switch obj.(type) {
 	case []interface{}:
-		if identifier := dyff.GetIdentifierFromNamedList(obj.([]interface{})); identifier != "" {
+		if identifier := GetIdentifierFromNamedList(obj.([]interface{})); identifier != "" {
 			for _, entry := range obj.([]interface{}) {
 				name, data := splitEntryIntoNameAndData(entry.(yaml.MapSlice), identifier)
 				traverseTree(NewPathWithNamedListElement(path, identifier, name), data, leafFunc)
@@ -254,6 +253,14 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 	}
 
 	return Path{DocumentIdx: 0, PathElements: elements}, nil
+}
+
+func ParsePathString(pathString string, obj interface{}) (Path, error) {
+	if IsDotStylePath(pathString) {
+		return ParseDotStylePathString(pathString, obj)
+	}
+
+	return ParseGoPatchStylePathString(pathString)
 }
 
 func IsDotStylePath(pathString string) bool {

@@ -26,7 +26,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/HeavyWombat/dyff/pkg/v1/dyff"
 	"github.com/HeavyWombat/gonvenience/pkg/v1/bunt"
 	"github.com/HeavyWombat/gonvenience/pkg/v1/neat"
 	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
@@ -61,7 +60,7 @@ func exitWithError(text string, err error) {
 }
 
 func getPathHelp() string {
-	exampleData, _ := dyff.LoadYAMLDocuments([]byte(`---
+	exampleData, _ := ytbx.LoadYAMLDocuments([]byte(`---
 list:
 - name: one
   somekey: foobar`))

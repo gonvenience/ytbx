@@ -21,14 +21,21 @@
 package ytbx_test
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"testing"
 
-	. "github.com/HeavyWombat/dyff/pkg/v1/dyff"
-	. "github.com/HeavyWombat/gonvenience/pkg/v1/bunt"
+	"github.com/HeavyWombat/gonvenience/pkg/v1/bunt"
+	"github.com/HeavyWombat/gonvenience/pkg/v1/neat"
+	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 var assetsDirectory string
@@ -39,8 +46,7 @@ func TestYtbx(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	ColorSetting = OFF
-	FixedTerminalWidth = 80
+	bunt.ColorSetting = bunt.OFF
 
 	_, file, _, ok := runtime.Caller(0)
 	Expect(ok).To(BeTrue())
@@ -50,3 +56,86 @@ var _ = BeforeSuite(func() {
 
 	assetsDirectory = dir
 })
+
+func yml(input string) yaml.MapSlice {
+	// If input is a file loacation, load this as YAML
+	if _, err := os.Open(input); err == nil {
+		var content ytbx.InputFile
+		var err error
+		if content, err = ytbx.LoadFile(input); err != nil {
+			Fail(fmt.Sprintf("Failed to load YAML MapSlice from '%s': %s", input, err.Error()))
+		}
+
+		if len(content.Documents) > 1 {
+			Fail(fmt.Sprintf("Failed to load YAML MapSlice from '%s': Provided file contains more than one document", input))
+		}
+
+		switch content.Documents[0].(type) {
+		case yaml.MapSlice:
+			return content.Documents[0].(yaml.MapSlice)
+		}
+
+		Fail(fmt.Sprintf("Failed to load YAML MapSlice from '%s': Document #0 in YAML is not of type MapSlice, but is %s", input, reflect.TypeOf(content.Documents[0])))
+	}
+
+	// Load YAML by parsing the actual string as YAML if it was not a file location
+	doc := singleDoc(input)
+	switch doc.(type) {
+	case yaml.MapSlice:
+		return doc.(yaml.MapSlice)
+	}
+
+	Fail(fmt.Sprintf("Failed to use YAML, parsed data is not a YAML MapSlice:\n%s\n", input))
+	return nil
+}
+
+func list(input string) []interface{} {
+	doc := singleDoc(input)
+
+	switch doc.(type) {
+	case []interface{}:
+		return doc.([]interface{})
+
+	case []yaml.MapSlice:
+		return ytbx.SimplifyList(doc.([]yaml.MapSlice))
+	}
+
+	Fail(fmt.Sprintf("Failed to use YAML, parsed data is not a slice of any kind:\n%s\nIt was parsed as: %#v", input, doc))
+	return nil
+}
+
+func singleDoc(input string) interface{} {
+	docs, err := ytbx.LoadYAMLDocuments([]byte(input))
+	if err != nil {
+		Fail(fmt.Sprintf("Failed to parse as YAML:\n%s\n\n%v", input, err))
+	}
+
+	if len(docs) > 1 {
+		Fail(fmt.Sprintf("Failed to use YAML, because it contains multiple documents:\n%s\n", input))
+	}
+
+	return docs[0]
+}
+
+func grab(obj interface{}, path string) interface{} {
+	value, err := ytbx.Grab(obj, path)
+	if err != nil {
+		out, _ := neat.ToYAMLString(obj)
+		Fail(fmt.Sprintf("Failed to grab by path %s from %s", path, out))
+	}
+
+	return value
+}
+
+func grabError(obj interface{}, path string) string {
+	value, err := ytbx.Grab(obj, path)
+	Expect(value).To(BeNil())
+	return err.Error()
+}
+
+func pathFromString(path string, obj interface{}) ytbx.Path {
+	result, err := ytbx.ParsePathString(path, obj)
+	Expect(err).To(BeNil())
+
+	return result
+}
