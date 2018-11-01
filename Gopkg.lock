@@ -2,18 +2,6 @@
 
 
 [[projects]]
-  digest = "1:d7ac5e7294237d05797f56fd4b40ef892e2d92b91e24002400ef1e6480bc8692"
-  name = "github.com/HeavyWombat/dyff"
-  packages = [
-    "pkg/v1/bunt",
-    "pkg/v1/dyff",
-    "pkg/v1/neat",
-  ]
-  pruneopts = "NUT"
-  revision = "8ff397437cedf562e3173a55051b429058108f2d"
-  version = "v0.5-beta.17"
-
-[[projects]]
   digest = "1:74e95f19090163c1d90c2fb3c98838d8e719ffa6513eeb4a0500560b990385d3"
   name = "github.com/HeavyWombat/gonvenience"
   packages = [
@@ -23,6 +11,22 @@
   pruneopts = "NUT"
   revision = "3905975288526a3a1c355f8f433e701e3e29a122"
   version = "v1.0"
+
+[[projects]]
+  digest = "1:c01767916c59f084bb7c41a7d5877c0f3099b1595cfa066e84ec6ad6b084dd89"
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+  version = "v1.1.1"
+
+[[projects]]
+  digest = "1:bf5cf1d53d703332e9bd8984c69784645b73a938317bf5ace9aadf20ac49379a"
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
+  version = "v1.6.2"
 
 [[projects]]
   digest = "1:41933d387bfa3eaa6a82647914ed7044f7b8355764c24fb920892bc8c03ef0c3"
@@ -69,14 +73,6 @@
   pruneopts = "NUT"
   revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
   version = "v0.0.4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:e34decedbcec12332c5836d16a6838f864e0b43c5b4f9aa9d9a85101015f87c2"
-  name = "github.com/mitchellh/hashstructure"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "a38c50148365edc8df43c1580c48fb2b3a1e9cd7"
 
 [[projects]]
   digest = "1:0be1cd4c73d5e22a30edcf32a18e9809a370a7a4a52c4f41a86070b34da93fef"
@@ -135,14 +131,6 @@
   version = "v0.8.0"
 
 [[projects]]
-  digest = "1:d917313f309bda80d27274d53985bc65651f81a5b66b820749ac7f8ef061fd04"
-  name = "github.com/sergi/go-diff"
-  packages = ["diffmatchpatch"]
-  pruneopts = "NUT"
-  revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:343d44e06621142ab09ae0c76c1799104cdfddd3ffb445d78b1adf8dc3ffaf3d"
   name = "github.com/spf13/cobra"
   packages = ["."]
@@ -160,27 +148,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a38c75e7edd595bbaa03334c1ac26163a5e990d81f05cd9ec5fd0edc9c786078"
-  name = "github.com/texttheater/golang-levenshtein"
-  packages = ["levenshtein"]
-  pruneopts = "NUT"
-  revision = "d188e65d659ef53fcdb0691c12f1bba64928b649"
-
-[[projects]]
-  branch = "master"
   digest = "1:7123803d3412b82b847705933a9eeb49f673439ae5913a9a0d7e3a93cc201d1e"
   name = "github.com/virtuald/go-ordered-json"
   packages = ["."]
   pruneopts = "NUT"
   revision = "b18e6e673d74b304ff0f935a436dde5707ee1e57"
-
-[[projects]]
-  branch = "master"
-  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  pruneopts = "NUT"
-  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
 
 [[projects]]
   branch = "master"
@@ -192,7 +164,7 @@
     "html/charset",
   ]
   pruneopts = "NUT"
-  revision = "c44066c5c816ec500d459a2a324a753f78531ae0"
+  revision = "e11730110bbd884bbf19550bfafe9d69519ce29e"
 
 [[projects]]
   branch = "master"
@@ -204,12 +176,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3bcf6eb3757db3e22c41d212f886b86d0f940f86e1af85b13cd31122ac341193"
+  digest = "1:777d58063db2ef2af9a6bfbf74d7c27b12894b0aad709891b963282e07932b8a"
   name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows",
-  ]
+  packages = ["unix"]
   pruneopts = "NUT"
   revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
 
@@ -268,12 +237,14 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/HeavyWombat/dyff/pkg/v1/dyff",
     "github.com/HeavyWombat/gonvenience/pkg/v1/bunt",
     "github.com/HeavyWombat/gonvenience/pkg/v1/neat",
+    "github.com/gorilla/mux",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
+    "github.com/pkg/errors",
     "github.com/spf13/cobra",
+    "github.com/virtuald/go-ordered-json",
     "gopkg.in/fsnotify.v1",
     "gopkg.in/yaml.v2",
   ]
