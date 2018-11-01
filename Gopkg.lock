@@ -14,6 +14,17 @@
   version = "v0.5-beta.17"
 
 [[projects]]
+  digest = "1:74e95f19090163c1d90c2fb3c98838d8e719ffa6513eeb4a0500560b990385d3"
+  name = "github.com/HeavyWombat/gonvenience"
+  packages = [
+    "pkg/v1/bunt",
+    "pkg/v1/neat",
+  ]
+  pruneopts = "NUT"
+  revision = "3905975288526a3a1c355f8f433e701e3e29a122"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:41933d387bfa3eaa6a82647914ed7044f7b8355764c24fb920892bc8c03ef0c3"
   name = "github.com/hpcloud/tail"
   packages = [
@@ -257,9 +268,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/HeavyWombat/dyff/pkg/v1/bunt",
     "github.com/HeavyWombat/dyff/pkg/v1/dyff",
-    "github.com/HeavyWombat/dyff/pkg/v1/neat",
+    "github.com/HeavyWombat/gonvenience/pkg/v1/bunt",
+    "github.com/HeavyWombat/gonvenience/pkg/v1/neat",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/spf13/cobra",
