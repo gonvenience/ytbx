@@ -36,7 +36,7 @@ func getExampleDocument() interface{} {
 }
 
 var _ = Describe("path tests", func() {
-	Context("parse dot style path strings into a path", func() {
+	Context("parse dot-style path strings into a path", func() {
 		It("should parse string with only map elements", func() {
 			path, err := ParseDotStylePathString("yaml.structure.somekey", getExampleDocument())
 			Expect(err).To(BeNil())
