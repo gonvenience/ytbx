@@ -30,7 +30,7 @@ import (
 
 // getCmd represents the get command
 var getCmd = &cobra.Command{
-	Use:   "get",
+	Use:   "get <file> <path>",
 	Args:  cobra.ExactArgs(2),
 	Short: "Get the value at a given path",
 	Long:  "Get the value at a given path in the file.\n" + getPathHelp(),
@@ -45,9 +45,9 @@ var getCmd = &cobra.Command{
 
 		boldKeys := true
 		useIndentLines := true
-		outoutProcessor := neat.NewOutputProcessor(useIndentLines, boldKeys, &neat.DefaultColorSchema)
+		outputProcessor := neat.NewOutputProcessor(useIndentLines, boldKeys, &neat.DefaultColorSchema)
 
-		output, err := outoutProcessor.ToYAML(obj)
+		output, err := outputProcessor.ToYAML(obj)
 		if err != nil {
 			exitWithError("Failed to render gathered data", err)
 		}

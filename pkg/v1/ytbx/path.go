@@ -186,8 +186,12 @@ func traverseTree(path Path, obj interface{}, leafFunc func(path Path, value int
 // ParseGoPatchStylePathString returns a path by parsing a string representation
 // which is assumed to be a GoPatch style path.
 func ParseGoPatchStylePathString(path string) (Path, error) {
-	elements := make([]PathElement, 0)
+	// Special case for root path
+	if path == "/" {
+		return Path{DocumentIdx: 0, PathElements: nil}, nil
+	}
 
+	elements := make([]PathElement, 0)
 	for i, section := range strings.Split(path, "/") {
 		if i == 0 {
 			continue
@@ -289,14 +293,9 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 // ParsePathString returns a path by parsing a string representation
 // of a path, which can be one of the supported types.
 func ParsePathString(pathString string, obj interface{}) (Path, error) {
-	if IsDotStylePath(pathString) {
-		return ParseDotStylePathString(pathString, obj)
+	if strings.HasPrefix(pathString, "/") {
+		return ParseGoPatchStylePathString(pathString)
 	}
 
-	return ParseGoPatchStylePathString(pathString)
-}
-
-// IsDotStylePath checks whether the path string is a Dot-Style path.
-func IsDotStylePath(pathString string) bool {
-	return !strings.HasPrefix(pathString, "/")
+	return ParseDotStylePathString(pathString, obj)
 }

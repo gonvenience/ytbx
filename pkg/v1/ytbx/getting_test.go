@@ -29,33 +29,28 @@ var _ = Describe("getting stuff test cases", func() {
 	Context("Grabing values by path", func() {
 		It("should return the value referenced by the path", func() {
 			example := yml("../../../assets/examples/types.yml")
-			Expect(example).ToNot(BeNil())
-
 			Expect(grab(example, "/yaml/map/before")).To(BeEquivalentTo("after"))
 			Expect(grab(example, "/yaml/map/intA")).To(BeEquivalentTo(42))
 			Expect(grab(example, "/yaml/map/mapA")).To(BeEquivalentTo(yml(`{ key0: A, key1: A }`)))
 			Expect(grab(example, "/yaml/map/listA")).To(BeEquivalentTo(list(`[ A, A, A ]`)))
-
 			Expect(grab(example, "/yaml/named-entry-list-using-name/name=B")).To(BeEquivalentTo(yml(`{ name: B }`)))
 			Expect(grab(example, "/yaml/named-entry-list-using-key/key=B")).To(BeEquivalentTo(yml(`{ key: B }`)))
 			Expect(grab(example, "/yaml/named-entry-list-using-id/id=B")).To(BeEquivalentTo(yml(`{ id: B }`)))
-
 			Expect(grab(example, "/yaml/simple-list/1")).To(BeEquivalentTo("B"))
 			Expect(grab(example, "/yaml/named-entry-list-using-key/3")).To(BeEquivalentTo(yml(`{ key: X }`)))
 
-			// --- --- ---
-
 			example = yml("../../../assets/bosh-yaml/manifest.yml")
-			Expect(example).ToNot(BeNil())
-
 			Expect(grab(example, "/instance_groups/name=web/networks/name=concourse/static_ips/0")).To(BeEquivalentTo("XX.XX.XX.XX"))
 			Expect(grab(example, "/instance_groups/name=worker/jobs/name=baggageclaim/properties")).To(BeEquivalentTo(yml(`{}`)))
 		})
 
-		It("should return the value referenced by the path", func() {
+		It("should return the whole tree if root is referenced", func() {
 			example := yml("../../../assets/examples/types.yml")
-			Expect(example).ToNot(BeNil())
+			Expect(grab(example, "/")).To(BeEquivalentTo(example))
+		})
 
+		It("should return useful error messages", func() {
+			example := yml("../../../assets/examples/types.yml")
 			Expect(grabError(example, "/yaml/simple-list/-1")).To(BeEquivalentTo("failed to traverse tree, provided list index -1 is not in range: 0..4"))
 			Expect(grabError(example, "/yaml/does-not-exist")).To(BeEquivalentTo("no key 'does-not-exist' found in map, available keys: map, simple-list, named-entry-list-using-name, named-entry-list-using-key, named-entry-list-using-id"))
 			Expect(grabError(example, "/yaml/0")).To(BeEquivalentTo("failed to traverse tree, expected a list but found type map at /yaml"))

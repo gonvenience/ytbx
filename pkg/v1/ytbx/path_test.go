@@ -116,5 +116,11 @@ var _ = Describe("path tests", func() {
 				{Idx: 1},
 			}}))
 		})
+
+		It("should parse an input string that points to the root of the tree structure", func() {
+			path, err := ParseGoPatchStylePathString("/")
+			Expect(err).To(BeNil())
+			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: nil}))
+		})
 	})
 })
