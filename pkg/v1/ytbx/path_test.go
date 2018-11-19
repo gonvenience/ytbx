@@ -41,9 +41,9 @@ var _ = Describe("path tests", func() {
 			path, err := ParseDotStylePathString("yaml.structure.somekey", getExampleDocument())
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "yaml"},
-				{Name: "structure"},
-				{Name: "somekey"},
+				{Idx: -1, Key: "", Name: "yaml"},
+				{Idx: -1, Key: "", Name: "structure"},
+				{Idx: -1, Key: "", Name: "somekey"},
 			}}))
 		})
 
@@ -51,9 +51,9 @@ var _ = Describe("path tests", func() {
 			path, err := ParseDotStylePathString("list.one.somekey", getExampleDocument())
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "list"},
-				{Key: "name", Name: "one"},
-				{Name: "somekey"},
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "name", Name: "one"},
+				{Idx: -1, Key: "", Name: "somekey"},
 			}}))
 		})
 
@@ -61,7 +61,7 @@ var _ = Describe("path tests", func() {
 			path, err := ParseDotStylePathString("simpleList.1", getExampleDocument())
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "simpleList"},
+				{Idx: -1, Key: "", Name: "simpleList"},
 				{Idx: 1},
 			}}))
 		})
@@ -70,9 +70,9 @@ var _ = Describe("path tests", func() {
 			path, err := ParseDotStylePathString("yaml.update.newkey", getExampleDocument())
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "yaml"},
-				{Name: "update"},
-				{Name: "newkey"},
+				{Idx: -1, Key: "", Name: "yaml"},
+				{Idx: -1, Key: "", Name: "update"},
+				{Idx: -1, Key: "", Name: "newkey"},
 			}}))
 		})
 
@@ -80,9 +80,9 @@ var _ = Describe("path tests", func() {
 			path, err := ParseDotStylePathString("list.one.newkey", getExampleDocument())
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "list"},
-				{Key: "name", Name: "one"},
-				{Name: "newkey"},
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "name", Name: "one"},
+				{Idx: -1, Key: "", Name: "newkey"},
 			}}))
 		})
 	})
@@ -92,9 +92,9 @@ var _ = Describe("path tests", func() {
 			path, err := ParseGoPatchStylePathString("/yaml/structure/somekey")
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "yaml"},
-				{Name: "structure"},
-				{Name: "somekey"},
+				{Idx: -1, Key: "", Name: "yaml"},
+				{Idx: -1, Key: "", Name: "structure"},
+				{Idx: -1, Key: "", Name: "somekey"},
 			}}))
 		})
 
@@ -102,9 +102,9 @@ var _ = Describe("path tests", func() {
 			path, err := ParseGoPatchStylePathString("/list/name=one/somekey")
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "list"},
-				{Key: "name", Name: "one"},
-				{Name: "somekey"},
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "name", Name: "one"},
+				{Idx: -1, Key: "", Name: "somekey"},
 			}}))
 		})
 
@@ -112,7 +112,7 @@ var _ = Describe("path tests", func() {
 			path, err := ParseGoPatchStylePathString("/simpleList/1")
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
-				{Name: "simpleList"},
+				{Idx: -1, Key: "", Name: "simpleList"},
 				{Idx: 1},
 			}}))
 		})
@@ -121,6 +121,29 @@ var _ = Describe("path tests", func() {
 			path, err := ParseGoPatchStylePathString("/")
 			Expect(err).To(BeNil())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: nil}))
+		})
+
+		It("should parse real-life scenario paths with mixed types", func() {
+			path, err := ParseGoPatchStylePathString("/resource_pools/name=concourse_resource_pool/cloud_properties/datacenters/0/clusters")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "resource_pools"},
+				{Idx: -1, Key: "name", Name: "concourse_resource_pool"},
+				{Idx: -1, Key: "", Name: "cloud_properties"},
+				{Idx: -1, Key: "", Name: "datacenters"},
+				{Idx: 0},
+				{Idx: -1, Key: "", Name: "clusters"},
+			}}))
+		})
+
+		It("should parse path strings with escaped slashes", func() {
+			path, err := ParseGoPatchStylePathString("/foo/name=bar.com\\/id/string")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "foo"},
+				{Idx: -1, Key: "name", Name: "bar.com/id"},
+				{Idx: -1, Key: "", Name: "string"},
+			}}))
 		})
 	})
 })

@@ -191,6 +191,10 @@ func ParseGoPatchStylePathString(path string) (Path, error) {
 		return Path{DocumentIdx: 0, PathElements: nil}, nil
 	}
 
+	// Poor mans solution to deal with escaped slashes, replace them with a "safe"
+	// replacement string that is later resolved into a simple slash
+	path = strings.Replace(path, `\/`, `%2F`, -1)
+
 	elements := make([]PathElement, 0)
 	for i, section := range strings.Split(path, "/") {
 		if i == 0 {
@@ -201,14 +205,22 @@ func ParseGoPatchStylePathString(path string) (Path, error) {
 		switch len(keyNameSplit) {
 		case 1:
 			if idx, err := strconv.Atoi(keyNameSplit[0]); err == nil {
-				elements = append(elements, PathElement{Idx: idx})
+				elements = append(elements, PathElement{
+					Idx: idx,
+				})
 
 			} else {
-				elements = append(elements, PathElement{Name: keyNameSplit[0]})
+				elements = append(elements, PathElement{
+					Idx:  -1,
+					Name: strings.Replace(keyNameSplit[0], `%2F`, "/", -1),
+				})
 			}
 
 		case 2:
-			elements = append(elements, PathElement{Key: keyNameSplit[0], Name: keyNameSplit[1]})
+			elements = append(elements, PathElement{Idx: -1,
+				Key:  strings.Replace(keyNameSplit[0], `%2F`, "/", -1),
+				Name: strings.Replace(keyNameSplit[1], `%2F`, "/", -1),
+			})
 
 		default:
 			return Path{}, &InvalidPathString{
@@ -234,11 +246,11 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 			mapslice := pointer.(yaml.MapSlice)
 			if value, err := getValueByKey(mapslice, section); err == nil {
 				pointer = value
-				elements = append(elements, PathElement{Name: section})
+				elements = append(elements, PathElement{Idx: -1, Name: section})
 
 			} else {
 				pointer = nil
-				elements = append(elements, PathElement{Name: section})
+				elements = append(elements, PathElement{Idx: -1, Name: section})
 			}
 
 		case isList(pointer):
@@ -276,14 +288,14 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 				}
 
 				pointer = value
-				elements = append(elements, PathElement{Key: identifier, Name: section})
+				elements = append(elements, PathElement{Idx: -1, Key: identifier, Name: section})
 			}
 
 		case pointer == nil:
 			// If the pointer is nil, it means that the previous section of the path
 			// string could not be found in the data structure and that all remaining
 			// sections are assumed to be of type map.
-			elements = append(elements, PathElement{Name: section})
+			elements = append(elements, PathElement{Idx: -1, Name: section})
 		}
 	}
 
