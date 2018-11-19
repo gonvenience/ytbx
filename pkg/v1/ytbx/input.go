@@ -327,7 +327,7 @@ func LoadYAMLDocuments(input []byte) ([]interface{}, error) {
 }
 
 // LoadTOMLDocuments reads the provided input data slice as a TOML file, which
-// can only have one document. For the sake of having similiar sounding
+// can only have one document. For the sake of having similar sounding
 // functions and the same signatures, the function uses the plural in its name
 // and returns a list of results even though it will only contain one entry.
 // All map entries inside the result document are converted into YAML MapSlice
