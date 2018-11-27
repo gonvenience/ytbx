@@ -29,6 +29,7 @@ import (
 
 	. "github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
 	. "github.com/gorilla/mux"
+	yaml "gopkg.in/yaml.v2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -92,6 +93,25 @@ var _ = Describe("Input test cases", func() {
 			fullUrl := server.URL + "/v1/assets/examples/does-not-exist.yml"
 			_, err := LoadFile(fullUrl)
 			Expect(err.Error()).To(BeEquivalentTo("Unable to load data from " + fullUrl + ": failed to retrieve data from location " + fullUrl + ": File not found: examples/does-not-exist.yml"))
+		})
+	})
+
+	Context("Proper YAMLification of input sources", func() {
+		It("should convert input TOML files to be YAMLish", func() {
+			documents, err := LoadTOMLDocuments([]byte(exampleTOML))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(documents)).To(BeEquivalentTo(1))
+
+			document := documents[0]
+
+			Expect(document).To(BeAssignableToTypeOf(yaml.MapSlice{}))
+			root := documents[0].(yaml.MapSlice)
+
+			Expect(root[0].Key).To(BeEquivalentTo("constraint"))
+			Expect(root[0].Value).To(BeAssignableToTypeOf([]yaml.MapSlice{}))
+
+			Expect(root[1].Key).To(BeEquivalentTo("override"))
+			Expect(root[1].Value).To(BeAssignableToTypeOf([]yaml.MapSlice{}))
 		})
 	})
 })

@@ -28,9 +28,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/HeavyWombat/gonvenience/pkg/v1/bunt"
-	"github.com/HeavyWombat/gonvenience/pkg/v1/neat"
 	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
+	"github.com/homeport/gonvenience/pkg/v1/bunt"
+	"github.com/homeport/gonvenience/pkg/v1/neat"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -39,6 +39,40 @@ import (
 )
 
 var assetsDirectory string
+
+var exampleTOML = `
+required = ["gopkg.in/fsnotify.v1"]
+
+[prune]
+  go-tests = true
+  unused-packages = true
+  non-go = true
+
+[[constraint]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
+
+[[constraint]]
+  name = "k8s.io/helm"
+  branch = "release-2.10"
+
+[[override]]
+  name = "gopkg.in/yaml.v2"
+  revision = "670d4cfef0544295bc27a114dbac37980d83185a"
+
+[[override]]
+  branch = "release-1.10"
+  name = "k8s.io/api"
+
+[[override]]
+  branch = "release-1.10"
+  name = "k8s.io/apimachinery"
+
+
+[[override]]
+  branch = "release-7.0"
+  name = "k8s.io/client-go"
+`
 
 func TestYtbx(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -131,11 +165,4 @@ func grabError(obj interface{}, path string) string {
 	value, err := ytbx.Grab(obj, path)
 	Expect(value).To(BeNil())
 	return err.Error()
-}
-
-func pathFromString(path string, obj interface{}) ytbx.Path {
-	result, err := ytbx.ParsePathString(path, obj)
-	Expect(err).To(BeNil())
-
-	return result
 }
