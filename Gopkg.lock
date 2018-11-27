@@ -10,17 +10,6 @@
   version = "v0.3.1"
 
 [[projects]]
-  digest = "1:74e95f19090163c1d90c2fb3c98838d8e719ffa6513eeb4a0500560b990385d3"
-  name = "github.com/HeavyWombat/gonvenience"
-  packages = [
-    "pkg/v1/bunt",
-    "pkg/v1/neat",
-  ]
-  pruneopts = "NUT"
-  revision = "3905975288526a3a1c355f8f433e701e3e29a122"
-  version = "v1.0"
-
-[[projects]]
   digest = "1:c01767916c59f084bb7c41a7d5877c0f3099b1595cfa066e84ec6ad6b084dd89"
   name = "github.com/gorilla/context"
   packages = ["."]
@@ -35,6 +24,18 @@
   pruneopts = "NUT"
   revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
   version = "v1.6.2"
+
+[[projects]]
+  digest = "1:5bdd43cdd1382c300fa31691dc91499c4b426d175a4ecbcf9b27d768871f6623"
+  name = "github.com/homeport/gonvenience"
+  packages = [
+    "pkg/v1/bunt",
+    "pkg/v1/neat",
+    "pkg/v1/term",
+  ]
+  pruneopts = "NUT"
+  revision = "f3a0320a871840ec3932581249c0e706a2f0ce46"
+  version = "v1.2"
 
 [[projects]]
   digest = "1:41933d387bfa3eaa6a82647914ed7044f7b8355764c24fb920892bc8c03ef0c3"
@@ -83,7 +84,15 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:0be1cd4c73d5e22a30edcf32a18e9809a370a7a4a52c4f41a86070b34da93fef"
+  branch = "master"
+  digest = "1:2d209eb757bb4101584c2618becd4026593509343ce55491233fd090faa1f1da"
+  name = "github.com/mitchellh/go-ps"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "4fdf99ab29366514c69ccccddab5dc58b8d84062"
+
+[[projects]]
+  digest = "1:cdc5cfc04dd0b98f86433207fe6d9879757c46734441a08886acc11251c7ed4a"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -106,11 +115,11 @@
     "types",
   ]
   pruneopts = "NUT"
-  revision = "3774a09d95489ccaa16032e0770d08ea77ba6184"
-  version = "v1.6.0"
+  revision = "2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f"
+  version = "v1.7.0"
 
 [[projects]]
-  digest = "1:95f40a9db820078d1795c7ba2d476016aca05dc4267eaf6752a925e437cb351f"
+  digest = "1:0db10c512b410a1ecd8845e31db52622c08b76198f7ab76afb25319c84a7fd4b"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -127,8 +136,8 @@
     "types",
   ]
   pruneopts = "NUT"
-  revision = "7615b9433f86a8bdf29709bf288bc4fd0636a369"
-  version = "v1.4.2"
+  revision = "65fb64232476ad9046e57c26cd0bff3d3a8dc6cd"
+  version = "v1.4.3"
 
 [[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
@@ -164,6 +173,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:38f553aff0273ad6f367cb0a0f8b6eecbaef8dc6cb8b50e57b6a81c1d5b1e332"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  pruneopts = "NUT"
+  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
+
+[[projects]]
+  branch = "master"
   digest = "1:5193d913046443e59093d66a97a40c51f4a5ea4ceba60f3b3ecf89694de5d16f"
   name = "golang.org/x/net"
   packages = [
@@ -184,11 +201,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5ee70f85e91d870b68af05a6d0f26e202d097b1ddf92587f04594689876782dc"
+  digest = "1:710483a12b766fb0e99ab26cbf6f82df2d958e94cb28890fcb2db96f76d39762"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+  ]
   pruneopts = "NUT"
-  revision = "93218def8b18e66adbdab3eca8ec334700329f1f"
+  revision = "62eef0e2fa9b2c385f7b2778e763486da6880d37"
 
 [[projects]]
   digest = "1:7c61a813b250ba8bb02bebb0382e6c3d00e04da2b577dc58985b86312fb89ffd"
@@ -246,9 +266,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/BurntSushi/toml",
-    "github.com/HeavyWombat/gonvenience/pkg/v1/bunt",
-    "github.com/HeavyWombat/gonvenience/pkg/v1/neat",
     "github.com/gorilla/mux",
+    "github.com/homeport/gonvenience/pkg/v1/bunt",
+    "github.com/homeport/gonvenience/pkg/v1/neat",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/pkg/errors",
