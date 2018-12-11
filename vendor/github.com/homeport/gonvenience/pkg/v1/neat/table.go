@@ -97,7 +97,7 @@ func AlignCenter(cols ...int) TableOption {
 }
 
 func Table(table [][]string, tableOptions ...TableOption) (string, error) {
-	if table == nil || len(table) == 0 {
+	if len(table) == 0 {
 		return "", &EmptyTableError{}
 	}
 

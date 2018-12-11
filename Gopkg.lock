@@ -26,7 +26,7 @@
   version = "v1.6.2"
 
 [[projects]]
-  digest = "1:5bdd43cdd1382c300fa31691dc91499c4b426d175a4ecbcf9b27d768871f6623"
+  digest = "1:e5faaed16388a75ca2f5591f7bd56cbd7d9278db29e0f0870a24fdcb04eff5be"
   name = "github.com/homeport/gonvenience"
   packages = [
     "pkg/v1/bunt",
@@ -34,8 +34,8 @@
     "pkg/v1/term",
   ]
   pruneopts = "NUT"
-  revision = "f3a0320a871840ec3932581249c0e706a2f0ce46"
-  version = "v1.2"
+  revision = "675de31aa5337f0019588aa9c1e01ba2b6b467ac"
+  version = "v1.5"
 
 [[projects]]
   digest = "1:41933d387bfa3eaa6a82647914ed7044f7b8355764c24fb920892bc8c03ef0c3"
@@ -177,7 +177,7 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "NUT"
-  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
+  revision = "505ab145d0a99da450461ae2c1a9f6cd10d1f447"
 
 [[projects]]
   branch = "master"
@@ -189,7 +189,7 @@
     "html/charset",
   ]
   pruneopts = "NUT"
-  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
+  revision = "610586996380ceef02dd726cc09df7e00a3f8e56"
 
 [[projects]]
   branch = "master"
@@ -201,14 +201,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:710483a12b766fb0e99ab26cbf6f82df2d958e94cb28890fcb2db96f76d39762"
+  digest = "1:09c9cc2c9ca78f520d47d5db8a2c8ea73e0a5c56f6d72baed3988d1a858fe306"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "NUT"
-  revision = "62eef0e2fa9b2c385f7b2778e763486da6880d37"
+  revision = "7da8ea5c81829e397bdf930c5d8ba4b703616f33"
 
 [[projects]]
   digest = "1:7c61a813b250ba8bb02bebb0382e6c3d00e04da2b577dc58985b86312fb89ffd"
@@ -254,12 +254,12 @@
   revision = "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
 
 [[projects]]
-  digest = "1:7c95b35057a0ff2e19f707173cc1a947fa43a6eb5c4d300d196ece0334046082"
+  digest = "1:18108594151654e9e696b27b181b953f9a90b16bf14d253dd1b397b025a1487f"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
