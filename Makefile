@@ -26,22 +26,22 @@ sources := $(wildcard cmd/ytbx/*.go internal/cmd/*.go pkg/v1/ytbx/*.go)
 all: test
 
 clean:
-	go clean -i -r -cache
+	GO111MODULE=on go clean -i -r -cache
 	rm -rf binaries
 
 test:
-	ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes=2 --compilers=2
+	GO111MODULE=on ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes=2 --compilers=2
 
 gobin:
-	go build -ldflags='-s -w -extldflags "-static"' -o ${GOPATH}/bin/ytbx cmd/ytbx/main.go
+	GO111MODULE=on go build -ldflags='-s -w -extldflags "-static"' -o ${GOPATH}/bin/ytbx cmd/ytbx/main.go
 
 build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64
 
 binaries/ytbx-linux-amd64: $(sources)
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-linux-amd64 cmd/ytbx/main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-linux-amd64 cmd/ytbx/main.go
 
 binaries/ytbx-darwin-amd64: $(sources)
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-darwin-amd64 cmd/ytbx/main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-darwin-amd64 cmd/ytbx/main.go
 
 binaries/ytbx-windows-amd64: $(sources)
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-windows-amd64 cmd/ytbx/main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-windows-amd64 cmd/ytbx/main.go
