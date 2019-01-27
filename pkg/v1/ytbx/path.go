@@ -22,6 +22,7 @@ package ytbx
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -136,6 +137,29 @@ func NewPathWithIndexedListElement(path Path, idx int) Path {
 	return NewPathWithPathElement(path, PathElement{
 		Idx: idx,
 	})
+}
+
+// ComparePaths returns all duplicate Path structures between two documents.
+func ComparePaths(fromLocation string, toLocation string, style PathStyle) ([]Path, error) {
+	var duplicatePaths []Path
+
+	pathsFromLocation, err := ListPaths(fromLocation, style)
+	if err != nil {
+		return nil, err
+	}
+	pathsToLocation, err := ListPaths(toLocation, style)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pathsFrom := range pathsFromLocation {
+		for _, pathsTo := range pathsToLocation {
+			if reflect.DeepEqual(pathsFrom.PathElements, pathsTo.PathElements) {
+				duplicatePaths = append(duplicatePaths, pathsFrom)
+			}
+		}
+	}
+	return duplicatePaths, nil
 }
 
 // ListPaths returns all paths in the documents using the provided choice of
