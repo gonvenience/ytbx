@@ -23,9 +23,10 @@ import (
 	"fmt"
 
 	"github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
-
 	"github.com/spf13/cobra"
 )
+
+var comparePathsByValue bool
 
 // compareCmd represents the compare command
 var compareCmd = &cobra.Command{
@@ -34,7 +35,7 @@ var compareCmd = &cobra.Command{
 	Short: "Compare YAML paths",
 	Long:  `Compare YAML paths between two files.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		list, err := ytbx.ComparePaths(args[0], args[1], ytbx.GoPatchStyle)
+		list, err := ytbx.ComparePaths(args[0], args[1], ytbx.GoPatchStyle, comparePathsByValue)
 		if err != nil {
 			exitWithError("Failed to get paths from file", err)
 		}
@@ -46,4 +47,5 @@ var compareCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(compareCmd)
+	compareCmd.PersistentFlags().BoolVar(&comparePathsByValue, "by-value", false, "compare only paths with same value")
 }

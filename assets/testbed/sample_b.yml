@@ -2,12 +2,12 @@
 # structure with maps
 yaml:
   structure:
-    somekey: foobar
-    dot: net
+    somekey: bar
+    dot: samevalue
 
 # structure with a list of maps
 list:
-- name: one
-  somekey: foobar
 - name: two
-  somekey: barfoo
+  somekey: bar
+- name: sametwo
+  somekey: samekey

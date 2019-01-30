@@ -147,18 +147,44 @@ var _ = Describe("path tests", func() {
 		})
 	})
 	Context("compare paths between two files", func() {
-		It("should find duplicate paths only", func() {
-			list, err := ComparePaths(assetsDirectory+"/testbed/sample_a.yml", assetsDirectory+"/testbed/sample_b.yml", GoPatchStyle)
+		It("should find only duplicate paths", func() {
+			list, err := ComparePaths(assetsDirectory+"/testbed/sample_a.yml", assetsDirectory+"/testbed/sample_b.yml", GoPatchStyle, false)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(list).To(BeEquivalentTo([]Path{{DocumentIdx: 0, PathElements: []PathElement{
+
+			listOfPaths := make([]Path, 5)
+			listOfPaths = []Path{{DocumentIdx: 0, PathElements: []PathElement{
 				{Idx: -1, Key: "", Name: "yaml"},
 				{Idx: -1, Key: "", Name: "structure"},
 				{Idx: -1, Key: "", Name: "somekey"},
 			}}, {DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "yaml"},
+				{Idx: -1, Key: "", Name: "structure"},
+				{Idx: -1, Key: "", Name: "dot"},
+			}}, {DocumentIdx: 0, PathElements: []PathElement{
 				{Idx: -1, Key: "", Name: "list"},
-				{Idx: -1, Key: "name", Name: "one"},
+				{Idx: -1, Key: "name", Name: "sametwo"},
 				{Idx: -1, Key: "", Name: "somekey"},
-			}}}))
+			}}}
+
+			Expect(list).To(BeEquivalentTo(listOfPaths))
+		})
+
+		It("should find only paths with the same value", func() {
+			list, err := ComparePaths(assetsDirectory+"/testbed/sample_a.yml", assetsDirectory+"/testbed/sample_b.yml", GoPatchStyle, true)
+			Expect(err).ToNot(HaveOccurred())
+
+			listOfPathsWithSameValue := make([]Path, 5)
+			listOfPathsWithSameValue = []Path{{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "yaml"},
+				{Idx: -1, Key: "", Name: "structure"},
+				{Idx: -1, Key: "", Name: "dot"},
+			}}, {DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "name", Name: "sametwo"},
+				{Idx: -1, Key: "", Name: "somekey"},
+			}}}
+
+			Expect(list).To(BeEquivalentTo(listOfPathsWithSameValue))
 		})
 	})
 })

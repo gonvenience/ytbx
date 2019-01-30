@@ -139,8 +139,44 @@ func NewPathWithIndexedListElement(path Path, idx int) Path {
 	})
 }
 
+// ComparePathsByValue returns all Path structure that have the same path value
+func ComparePathsByValue(fromLocation string, toLocation string, duplicatePaths []Path) ([]Path, error) {
+	from, err := LoadFile(fromLocation)
+	if err != nil {
+		return nil, err
+	}
+
+	to, err := LoadFile(toLocation)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(from.Documents) > 1 || len(to.Documents) > 1 {
+		return nil, fmt.Errorf("input files have more than one document, which is not supported yet")
+	}
+
+	duplicatePathsWithTheSameValue := []Path{}
+
+	for _, path := range duplicatePaths {
+		fromValue, err := Grab(from.Documents[0], path.ToGoPatchStyle())
+		if err != nil {
+			return nil, err
+		}
+
+		toValue, err := Grab(to.Documents[0], path.ToGoPatchStyle())
+		if err != nil {
+			return nil, err
+		}
+
+		if reflect.DeepEqual(fromValue, toValue) {
+			duplicatePathsWithTheSameValue = append(duplicatePathsWithTheSameValue, path)
+		}
+	}
+	return duplicatePathsWithTheSameValue, nil
+}
+
 // ComparePaths returns all duplicate Path structures between two documents.
-func ComparePaths(fromLocation string, toLocation string, style PathStyle) ([]Path, error) {
+func ComparePaths(fromLocation string, toLocation string, style PathStyle, compareByValue bool) ([]Path, error) {
 	var duplicatePaths []Path
 
 	pathsFromLocation, err := ListPaths(fromLocation, style)
@@ -152,14 +188,22 @@ func ComparePaths(fromLocation string, toLocation string, style PathStyle) ([]Pa
 		return nil, err
 	}
 
+	lookup := map[string]struct{}{}
 	for _, pathsFrom := range pathsFromLocation {
-		for _, pathsTo := range pathsToLocation {
-			if reflect.DeepEqual(pathsFrom.PathElements, pathsTo.PathElements) {
-				duplicatePaths = append(duplicatePaths, pathsFrom)
-			}
+		lookup[pathsFrom.ToGoPatchStyle()] = struct{}{}
+	}
+
+	for _, pathsTo := range pathsToLocation {
+		if _, ok := lookup[pathsTo.ToGoPatchStyle()]; ok {
+			duplicatePaths = append(duplicatePaths, pathsTo)
 		}
 	}
-	return duplicatePaths, nil
+
+	if !compareByValue {
+		return duplicatePaths, nil
+	}
+
+	return ComparePathsByValue(fromLocation, toLocation, duplicatePaths)
 }
 
 // ListPaths returns all paths in the documents using the provided choice of
