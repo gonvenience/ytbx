@@ -146,6 +146,7 @@ var _ = Describe("path tests", func() {
 			}}))
 		})
 	})
+
 	Context("compare paths between two files", func() {
 		It("should find only duplicate paths", func() {
 			list, err := ComparePaths(assetsDirectory+"/testbed/sample_a.yml", assetsDirectory+"/testbed/sample_b.yml", GoPatchStyle, false)
