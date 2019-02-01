@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright © 2018 Matthias Diester
+# Copyright © 2018 The Homeport Team
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ if ! hash curl 2>/dev/null; then
 fi
 
 if [[ "$(uname -m)" != "x86_64" ]]; then
-  echo -e "Unsupported machine type \\033[1m$(uname -m)\\033[0m: Please check \\033[4;94mhttps://api.github.com/repos/HeavyWombat/ytbx/releases\\033[0m manually"
+  echo -e "Unsupported machine type \\033[1m$(uname -m)\\033[0m: Please check \\033[4;94mhttps://api.github.com/repos/homeport/ytbx/releases\\033[0m manually"
   exit 1
 fi
 
@@ -39,7 +39,7 @@ if [[ $# -eq 0 ]]; then
   fi
 
   # Find the latest ytbx version using the GitHub API
-  SELECTED_TAG="$(curl --silent --location https://api.github.com/repos/HeavyWombat/ytbx/releases | jq --raw-output '.[0].tag_name')"
+  SELECTED_TAG="$(curl --silent --location https://api.github.com/repos/homeport/ytbx/releases | jq --raw-output '.[0].tag_name')"
 else
   # Use provided argument as tag to download
   SELECTED_TAG="$1"
@@ -63,7 +63,7 @@ fi
 case "${SYSTEM_UNAME}" in
   darwin | linux)
     TARGET_FILE="${TARGET_DIR}/ytbx"
-    DOWNLOAD_URI="https://github.com/HeavyWombat/ytbx/releases/download/${SELECTED_TAG}/ytbx-${SYSTEM_UNAME}-amd64"
+    DOWNLOAD_URI="https://github.com/homeport/ytbx/releases/download/${SELECTED_TAG}/ytbx-${SYSTEM_UNAME}-amd64"
 
     echo -e "Downloading \\033[4;94m${DOWNLOAD_URI}\\033[0m to \\033[1m${TARGET_DIR}\\033[0m"
     if (curl --progress-bar --location "${DOWNLOAD_URI}" --output "${TARGET_FILE}" && chmod a+rx "${TARGET_FILE}"); then

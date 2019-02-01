@@ -1,4 +1,4 @@
-# Copyright © 2018 Matthias Diester
+# Copyright © 2018 The Homeport Team
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,10 @@ gobin:
 build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64
 
 binaries/ytbx-linux-amd64: $(sources)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-linux-amd64 cmd/ytbx/main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-linux-amd64 cmd/ytbx/main.go
 
 binaries/ytbx-darwin-amd64: $(sources)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-darwin-amd64 cmd/ytbx/main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-darwin-amd64 cmd/ytbx/main.go
 
 binaries/ytbx-windows-amd64: $(sources)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/HeavyWombat/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-windows-amd64 cmd/ytbx/main.go
+	GO111MODULE=on CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-windows-amd64 cmd/ytbx/main.go

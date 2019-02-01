@@ -1,4 +1,4 @@
-// Copyright © 2018 Matthias Diester
+// Copyright © 2018 The Homeport Team
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/HeavyWombat/ytbx/pkg/v1/ytbx"
+	. "github.com/homeport/ytbx/pkg/v1/ytbx"
 )
 
 func getExampleDocument() interface{} {
