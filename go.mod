@@ -3,7 +3,7 @@ module github.com/homeport/ytbx
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/gorilla/mux v1.7.0
-	github.com/homeport/gonvenience v1.6.0
+	github.com/homeport/gonvenience v1.7.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
