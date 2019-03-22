@@ -30,7 +30,7 @@ from updateYAML import updateYAML
 
 
 class TestStringMethods(unittest.TestCase):
-    assets = os.path.dirname(os.path.realpath(__file__)) + "/../../assets"
+    assets = os.path.dirname(os.path.realpath(__file__)) + "/../../../assets"
 
     def test_empty_list_in_getEntryIdxByIdentifier(self):
         self.assertEqual(getEntryIdxByIdentifier([], "name", "foobar"), -1)

@@ -130,7 +130,7 @@ def updateYAML(location, pathString, newValue):
 
 
 if __name__ == '__main__':
-    location = sys.argv[0]
-    pathString = sys.argv[1]
-    newValue = YAML().load(sys.argv[2])
+    location = sys.argv[1]
+    pathString = sys.argv[2]
+    newValue = YAML().load(sys.argv[3])
     updateYAML(location, pathString, newValue)
