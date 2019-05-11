@@ -26,9 +26,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/homeport/gonvenience/pkg/v1/neat"
+	"github.com/homeport/ytbx/pkg/v1/ytbx"
 )
 
 // rootCmd represents the base command when called without any subcommands

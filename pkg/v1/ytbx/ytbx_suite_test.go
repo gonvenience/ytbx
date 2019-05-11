@@ -28,9 +28,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/homeport/gonvenience/pkg/v1/neat"
+	"github.com/homeport/ytbx/pkg/v1/ytbx"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

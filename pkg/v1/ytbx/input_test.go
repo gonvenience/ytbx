@@ -27,8 +27,8 @@ import (
 	"net/http/httptest"
 	"os"
 
-	. "github.com/homeport/ytbx/pkg/v1/ytbx"
 	. "github.com/gorilla/mux"
+	. "github.com/homeport/ytbx/pkg/v1/ytbx"
 	yaml "gopkg.in/yaml.v2"
 
 	. "github.com/onsi/ginkgo"
