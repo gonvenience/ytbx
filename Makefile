@@ -18,30 +18,52 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-.PHONY: all clean test gobin build upx
+.PHONY: all clean test verify build
 
 version := $(shell git describe --tags --abbrev=0 2>/dev/null || (git rev-parse HEAD | cut -c-8))
 sources := $(wildcard cmd/ytbx/*.go internal/cmd/*.go pkg/v1/ytbx/*.go)
 
-all: test
+all: clean verify test build
 
 clean:
-	GO111MODULE=on go clean -i -r -cache
-	rm -rf binaries
+	@GO111MODULE=on go clean -cache $(shell go list ./...)
+	@rm -rf binaries
 
-test:
-	GO111MODULE=on ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --nodes=2 --compilers=2
+verify:
+	@GO111MODULE=on go mod download
+	@GO111MODULE=on go mod verify
 
-gobin:
-	GO111MODULE=on go build -ldflags='-s -w -extldflags "-static"' -o ${GOPATH}/bin/ytbx cmd/ytbx/main.go
-
-build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64
+test: $(sources)
+	@GO111MODULE=on ginkgo -r \
+	  -randomizeAllSpecs \
+	  -randomizeSuites \
+	  -failOnPending \
+	  -trace \
+	  -race \
+	  -nodes=2 \
+	  -compilers=2
 
 binaries/ytbx-linux-amd64: $(sources)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-linux-amd64 cmd/ytbx/main.go
+	@GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+	  -tags netgo \
+		-ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' \
+		-o binaries/ytbx-linux-amd64 \
+		cmd/ytbx/main.go
 
 binaries/ytbx-darwin-amd64: $(sources)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-darwin-amd64 cmd/ytbx/main.go
+	@GO111MODULE=on CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build \
+	  -tags netgo \
+		-ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' \
+		-o binaries/ytbx-darwin-amd64 \
+		cmd/ytbx/main.go
 
-binaries/ytbx-windows-amd64: $(sources)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -tags netgo -ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' -o binaries/ytbx-windows-amd64 cmd/ytbx/main.go
+binaries/ytbx-windows-amd64.exe: $(sources)
+	@GO111MODULE=on CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+	  -tags netgo \
+		-ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' \
+		-o binaries/ytbx-windows-amd64.exe \
+		cmd/ytbx/main.go
+
+build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64.exe
+	@/bin/sh -c "echo '\n\033[1mSHA sum of compiled binaries:\033[0m'"
+	@shasum -a256 binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64.exe

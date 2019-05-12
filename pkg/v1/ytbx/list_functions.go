@@ -21,6 +21,8 @@
 package ytbx
 
 import (
+	"fmt"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -49,6 +51,22 @@ func GetIdentifierFromNamedList(list []interface{}) string {
 	}
 
 	return ""
+}
+
+// ListStringKeys returns a list of the keys of the YAML MapSlice (map). Only string keys are supported. Other types will result in an error.
+func ListStringKeys(mapslice yaml.MapSlice) ([]string, error) {
+	keys := make([]string, len(mapslice))
+	for i, mapitem := range mapslice {
+		switch mapitem.Key.(type) {
+		case string:
+			keys[i] = mapitem.Key.(string)
+
+		default:
+			return nil, fmt.Errorf("provided mapslice mapitem contains non-string key: %#v", mapitem.Key)
+		}
+	}
+
+	return keys, nil
 }
 
 // getEntryFromNamedList returns the entry that is identified by the identifier key and a name, for example: `name: one` where name is the identifier key and one the name. Function will return nil with bool false if there is no such entry.
