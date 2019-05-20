@@ -36,12 +36,12 @@ const (
 
 // GetType returns the type of the input value with a YAML specific view
 func GetType(value interface{}) string {
-	switch value.(type) {
+	switch tobj := value.(type) {
 	case yaml.MapSlice:
 		return typeMap
 
 	case []interface{}:
-		if IsComplexSlice(value.([]interface{})) {
+		if IsComplexSlice(tobj) {
 			return typeComplexList
 		}
 

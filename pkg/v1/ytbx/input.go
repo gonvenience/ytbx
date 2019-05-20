@@ -256,7 +256,7 @@ func LoadJSONDocuments(input []byte) ([]interface{}, error) {
 			values[i] = value
 
 		default:
-			return nil, fmt.Errorf("Unsupported type %s in load document function", types[i])
+			return nil, fmt.Errorf("unsupported type %s in load document function", types[i])
 		}
 	}
 
@@ -318,7 +318,7 @@ func LoadYAMLDocuments(input []byte) ([]interface{}, error) {
 			values[i] = value
 
 		default:
-			return nil, fmt.Errorf("Unsupported type %s in load document function", types[i])
+			return nil, fmt.Errorf("unsupported type %s in load document function", types[i])
 		}
 	}
 
@@ -368,7 +368,7 @@ func getBytesFromLocation(location string) ([]byte, error) {
 	}
 
 	// In any other case, bail out ...
-	return nil, fmt.Errorf("Unable to get any content using location %s: it is not a file or usable URI", location)
+	return nil, fmt.Errorf("unable to get any content using location %s: it is not a file or usable URI", location)
 }
 
 // IsStdin checks whether the provided input location refers to the dash
