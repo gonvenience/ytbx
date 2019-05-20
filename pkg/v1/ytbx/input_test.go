@@ -92,7 +92,7 @@ var _ = Describe("Input test cases", func() {
 		It("should fail if the HTTP request fails", func() {
 			fullUrl := server.URL + "/v1/assets/examples/does-not-exist.yml"
 			_, err := LoadFile(fullUrl)
-			Expect(err.Error()).To(BeEquivalentTo("Unable to load data from " + fullUrl + ": failed to retrieve data from location " + fullUrl + ": File not found: examples/does-not-exist.yml"))
+			Expect(err.Error()).To(BeEquivalentTo("unable to load data from " + fullUrl + ": failed to retrieve data from location " + fullUrl + ": File not found: examples/does-not-exist.yml"))
 		})
 	})
 

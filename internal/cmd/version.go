@@ -21,8 +21,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +34,11 @@ var versionCmd = &cobra.Command{
 	Short: "Display version",
 	Long:  "Displays the version of this tool",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("version %s\n", version)
+		if len(version) == 0 {
+			version = "development"
+		}
+
+		bunt.Printf("version DimGray{%s}\n", version)
 	},
 }
 
