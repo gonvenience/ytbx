@@ -32,10 +32,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/pkg/errors"
-
 	toml "github.com/BurntSushi/toml"
+	"github.com/homeport/gonvenience/pkg/v1/bunt"
+	"github.com/homeport/gonvenience/pkg/v1/wrap"
 	ordered "github.com/virtuald/go-ordered-json"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -173,11 +172,13 @@ func LoadFile(location string) (InputFile, error) {
 	)
 
 	if data, err = getBytesFromLocation(location); err != nil {
-		return InputFile{}, errors.Wrap(err, fmt.Sprintf("Unable to load data from %s", location))
+		return InputFile{},
+			wrap.Error(err, fmt.Sprintf("unable to load data from %s", location))
 	}
 
 	if documents, err = LoadDocuments(data); err != nil {
-		return InputFile{}, errors.Wrap(err, fmt.Sprintf("Unable to parse data from %s", location))
+		return InputFile{},
+			wrap.Error(err, fmt.Sprintf("unable to parse data from %s", location))
 	}
 
 	return InputFile{Location: location, Documents: documents}, nil

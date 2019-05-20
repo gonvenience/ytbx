@@ -24,23 +24,26 @@ import (
 	"fmt"
 
 	"github.com/homeport/gonvenience/pkg/v1/neat"
+	"github.com/homeport/gonvenience/pkg/v1/wrap"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/spf13/cobra"
 )
 
 // getCmd represents the get command
 var getCmd = &cobra.Command{
-	Use:   "get <file> <path>",
-	Args:  cobra.ExactArgs(2),
-	Short: "Get the value at a given path",
-	Long:  "Get the value at a given path in the file.\n" + getPathHelp(),
-	Run: func(cmd *cobra.Command, args []string) {
+	Use:           "get <file> <path>",
+	Args:          cobra.ExactArgs(2),
+	Short:         "Get the value at a given path",
+	Long:          "Get the value at a given path in the file.\n" + getPathHelp(),
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		location := args[0]
 		pathString := args[1]
 
 		obj, err := get(location, pathString)
 		if err != nil {
-			exitWithError("Failed to get path from file", err)
+			return wrap.Error(err, "failed to get path from file")
 		}
 
 		boldKeys := true
@@ -49,10 +52,11 @@ var getCmd = &cobra.Command{
 
 		output, err := outputProcessor.ToYAML(obj)
 		if err != nil {
-			exitWithError("Failed to render gathered data", err)
+			return wrap.Error(err, "failed to render gathered data")
 		}
 
 		fmt.Print(output)
+		return nil
 	},
 }
 

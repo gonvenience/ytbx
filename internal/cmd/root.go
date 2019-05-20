@@ -28,6 +28,7 @@ import (
 
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/homeport/gonvenience/pkg/v1/neat"
+	"github.com/homeport/gonvenience/pkg/v1/wrap"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 )
 
@@ -42,21 +43,21 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		switch ctxErr := err.(type) {
+		case wrap.ContextError:
+			bunt.Printf("Red{*Error:*} LightCoral{%s}\n%v\n",
+				ctxErr.Context(),
+				ctxErr.Cause(),
+			)
+
+		default:
+			bunt.Printf("Red{*Error:*}\n%v\n",
+				err,
+			)
+		}
+
 		os.Exit(1)
 	}
-}
-
-// exitWithError exits program with given text and error message
-func exitWithError(text string, err error) {
-	if err != nil {
-		fmt.Printf("%s: %s\n", text, bunt.Colorize(err.Error(), bunt.Red))
-
-	} else {
-		fmt.Print(text)
-	}
-
-	os.Exit(1)
 }
 
 func getPathHelp() string {

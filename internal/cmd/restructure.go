@@ -38,10 +38,12 @@ var inplace bool
 
 // restructureCmd represents the paths command
 var restructureCmd = &cobra.Command{
-	Use:   "restructure <file>",
-	Args:  cobra.ExactArgs(1),
-	Short: "Restructure the order of keys",
-	Long:  renderLongDescription(),
+	Use:           "restructure <file>",
+	Args:          cobra.ExactArgs(1),
+	Short:         "Restructure the order of keys",
+	Long:          renderLongDescription(),
+	SilenceUsage:  true,
+	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		location := args[0]
 

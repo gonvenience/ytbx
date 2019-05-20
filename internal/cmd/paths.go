@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/homeport/gonvenience/pkg/v1/wrap"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/spf13/cobra"
 )
@@ -40,17 +41,19 @@ yaml:
 
 would list you one path: /yaml/structure/somekey
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		location := args[0]
-
-		list, err := ytbx.ListPaths(location, ytbx.GoPatchStyle)
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		list, err := ytbx.ListPaths(args[0], ytbx.GoPatchStyle)
 		if err != nil {
-			exitWithError("Failed to get paths from file", err)
+			return wrap.Error(err, "failed to get paths from file")
 		}
 
 		for _, entry := range list {
 			fmt.Println(entry.ToGoPatchStyle())
 		}
+
+		return nil
 	},
 }
 

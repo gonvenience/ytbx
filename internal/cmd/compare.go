@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/homeport/gonvenience/pkg/v1/wrap"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/spf13/cobra"
 )
@@ -31,18 +32,23 @@ var comparePathsByValue bool
 
 // compareCmd represents the compare command
 var compareCmd = &cobra.Command{
-	Use:   "compare <from_file> <to_file>",
-	Args:  cobra.RangeArgs(1, 2),
-	Short: "Compare YAML paths",
-	Long:  `Compare YAML paths between two files.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Use:           "compare <from-file> <to-file>",
+	Args:          cobra.RangeArgs(1, 2),
+	Short:         "Compare YAML paths",
+	Long:          `Compare YAML paths between two files.`,
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		list, err := ytbx.ComparePaths(args[0], args[1], ytbx.GoPatchStyle, comparePathsByValue)
 		if err != nil {
-			exitWithError("Failed to get paths from file", err)
+			return wrap.Error(err, "failed to compare paths of files")
 		}
+
 		for _, entry := range list {
 			fmt.Println(entry)
 		}
+
+		return nil
 	},
 }
 
