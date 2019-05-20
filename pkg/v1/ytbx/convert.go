@@ -39,32 +39,29 @@ import (
 // `github.com/virtuald/go-ordered-json` and will translate this structure into
 // the compatible YAML structure.
 func mapSlicify(obj interface{}) interface{} {
-	switch obj.(type) {
+	switch tobj := obj.(type) {
 	case ordered.OrderedObject:
-		orderedObj := obj.(ordered.OrderedObject)
-		result := make(yaml.MapSlice, 0, len(orderedObj))
-		for _, member := range orderedObj {
+		result := make(yaml.MapSlice, 0, len(tobj))
+		for _, member := range tobj {
 			result = append(result, yaml.MapItem{Key: member.Key, Value: mapSlicify(member.Value)})
 		}
 
 		return result
 
 	case map[string]interface{}:
-		return mapToYamlSlice(obj.(map[string]interface{}))
+		return mapToYamlSlice(tobj)
 
 	case []interface{}:
-		list := obj.([]interface{})
-		result := make([]interface{}, len(list))
-		for idx, entry := range list {
+		result := make([]interface{}, len(tobj))
+		for idx, entry := range tobj {
 			result[idx] = mapSlicify(entry)
 		}
 
 		return result
 
 	case []map[string]interface{}:
-		list := obj.([]map[string]interface{})
-		result := make([]yaml.MapSlice, len(list))
-		for idx, entry := range list {
+		result := make([]yaml.MapSlice, len(tobj))
+		for idx, entry := range tobj {
 			result[idx] = mapToYamlSlice(entry)
 		}
 
@@ -92,21 +89,20 @@ func mapToYamlSlice(input map[string]interface{}) yaml.MapSlice {
 }
 
 func castAsComplexList(obj interface{}) ([]yaml.MapSlice, bool) {
-	switch obj.(type) {
+	switch tobj := obj.(type) {
 	case []yaml.MapSlice:
-		return obj.([]yaml.MapSlice), true
+		return tobj, true
 
 	case []interface{}:
-		list := obj.([]interface{})
-		if IsComplexSlice(list) {
-			result := make([]yaml.MapSlice, len(list))
-			for idx, entry := range list {
-				switch entry.(type) {
+		if IsComplexSlice(tobj) {
+			result := make([]yaml.MapSlice, len(tobj))
+			for idx, entry := range tobj {
+				switch x := entry.(type) {
 				case yaml.MapSlice:
-					result[idx] = entry.(yaml.MapSlice)
+					result[idx] = x
 
 				case map[string]interface{}:
-					result[idx] = mapToYamlSlice(entry.(map[string]interface{}))
+					result[idx] = mapToYamlSlice(x)
 				}
 			}
 

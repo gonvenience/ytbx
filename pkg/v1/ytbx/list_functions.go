@@ -31,9 +31,9 @@ func GetIdentifierFromNamedList(list []interface{}) string {
 	counters := map[interface{}]int{}
 
 	for _, sliceEntry := range list {
-		switch sliceEntry.(type) {
+		switch mapslice := sliceEntry.(type) {
 		case yaml.MapSlice:
-			for _, mapSliceEntry := range sliceEntry.(yaml.MapSlice) {
+			for _, mapSliceEntry := range mapslice {
 				if _, ok := counters[mapSliceEntry.Key]; !ok {
 					counters[mapSliceEntry.Key] = 0
 				}

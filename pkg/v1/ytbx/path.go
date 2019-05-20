@@ -227,22 +227,22 @@ func ListPaths(location string, style PathStyle) ([]Path, error) {
 }
 
 func traverseTree(path Path, obj interface{}, leafFunc func(path Path, value interface{})) {
-	switch obj.(type) {
+	switch tobj := obj.(type) {
 	case []interface{}:
-		if identifier := GetIdentifierFromNamedList(obj.([]interface{})); identifier != "" {
-			for _, entry := range obj.([]interface{}) {
+		if identifier := GetIdentifierFromNamedList(tobj); identifier != "" {
+			for _, entry := range tobj {
 				name, data := splitEntryIntoNameAndData(entry.(yaml.MapSlice), identifier)
 				traverseTree(NewPathWithNamedListElement(path, identifier, name), data, leafFunc)
 			}
 
 		} else {
-			for idx, entry := range obj.([]interface{}) {
+			for idx, entry := range tobj {
 				traverseTree(NewPathWithIndexedListElement(path, idx), entry, leafFunc)
 			}
 		}
 
 	case yaml.MapSlice:
-		for _, mapitem := range obj.(yaml.MapSlice) {
+		for _, mapitem := range tobj {
 			traverseTree(NewPathWithNamedElement(path, mapitem.Key), mapitem.Value, leafFunc)
 		}
 
@@ -378,4 +378,19 @@ func ParsePathString(pathString string, obj interface{}) (Path, error) {
 	}
 
 	return ParseDotStylePathString(pathString, obj)
+}
+
+func (element PathElement) isMapElement() bool {
+	return len(element.Key) == 0 &&
+		len(element.Name) > 0
+}
+
+func (element PathElement) isComplexListElement() bool {
+	return len(element.Key) > 0 &&
+		len(element.Name) > 0
+}
+
+func (element PathElement) isSimpleListElement() bool {
+	return len(element.Key) == 0 &&
+		len(element.Name) == 0
 }

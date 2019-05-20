@@ -33,12 +33,16 @@ func Grab(obj interface{}, pathString string) (interface{}, error) {
 		return nil, err
 	}
 
-	pointer := obj
-	pointerPath := Path{DocumentIdx: path.DocumentIdx}
+	return grabByPath(obj, path)
+}
+
+func grabByPath(obj interface{}, path Path) (interface{}, error) {
+	pointer, pointerPath := obj, Path{DocumentIdx: path.DocumentIdx}
+
 	for _, element := range path.PathElements {
 		switch {
 		// Key/Value Map, where the element name is the key for the map
-		case len(element.Key) == 0 && len(element.Name) > 0:
+		case element.isMapElement():
 			if !isMapSlice(pointer) {
 				return nil, fmt.Errorf("failed to traverse tree, expected a %s but found type %s at %s", typeMap, GetType(pointer), pointerPath.ToGoPatchStyle())
 			}
@@ -51,7 +55,7 @@ func Grab(obj interface{}, pathString string) (interface{}, error) {
 			pointer = entry
 
 		// Complex List, where each list entry is a Key/Value map and the entry is identified by name using an indentifier (e.g. name, key, or id)
-		case len(element.Key) > 0 && len(element.Name) > 0:
+		case element.isComplexListElement():
 			complexList, ok := castAsComplexList(pointer)
 			if !ok {
 				return nil, fmt.Errorf("failed to traverse tree, expected a %s but found type %s at %s", typeComplexList, GetType(pointer), pointerPath.ToGoPatchStyle())
@@ -65,7 +69,7 @@ func Grab(obj interface{}, pathString string) (interface{}, error) {
 			pointer = entry
 
 		// Simple List (identified by index)
-		case len(element.Key) == 0 && len(element.Name) == 0:
+		case element.isSimpleListElement():
 			if !isList(pointer) {
 				return nil, fmt.Errorf("failed to traverse tree, expected a %s but found type %s at %s", typeSimpleList, GetType(pointer), pointerPath.ToGoPatchStyle())
 			}
