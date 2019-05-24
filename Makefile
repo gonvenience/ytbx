@@ -57,13 +57,6 @@ binaries/ytbx-darwin-amd64: $(sources)
 		-o binaries/ytbx-darwin-amd64 \
 		cmd/ytbx/main.go
 
-binaries/ytbx-windows-amd64.exe: $(sources)
-	@GO111MODULE=on CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
-	  -tags netgo \
-		-ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' \
-		-o binaries/ytbx-windows-amd64.exe \
-		cmd/ytbx/main.go
-
-build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64.exe
+build: binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64
 	@/bin/sh -c "echo '\n\033[1mSHA sum of compiled binaries:\033[0m'"
-	@shasum -a256 binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64 binaries/ytbx-windows-amd64.exe
+	@shasum -a256 binaries/ytbx-linux-amd64 binaries/ytbx-darwin-amd64
