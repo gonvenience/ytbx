@@ -23,7 +23,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/homeport/gonvenience/pkg/v1/wrap"
+	"github.com/gonvenience/wrap"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/spf13/cobra"
 )
