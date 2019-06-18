@@ -28,13 +28,12 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/homeport/gonvenience/pkg/v1/neat"
-	"github.com/homeport/ytbx/pkg/v1/ytbx"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/neat"
+	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	yaml "gopkg.in/yaml.v2"
 )
 

@@ -27,12 +27,12 @@ import (
 	"net/http/httptest"
 	"os"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
 	. "github.com/gorilla/mux"
 	. "github.com/homeport/ytbx/pkg/v1/ytbx"
 	yaml "gopkg.in/yaml.v2"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Input test cases", func() {

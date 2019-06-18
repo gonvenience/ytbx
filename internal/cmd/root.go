@@ -24,12 +24,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
-
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/homeport/gonvenience/pkg/v1/neat"
-	"github.com/homeport/gonvenience/pkg/v1/wrap"
+	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/neat"
+	"github.com/gonvenience/wrap"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
+	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands

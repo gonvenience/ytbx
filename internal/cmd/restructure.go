@@ -27,8 +27,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/homeport/gonvenience/pkg/v1/neat"
+	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/neat"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"

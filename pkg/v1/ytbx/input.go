@@ -33,8 +33,8 @@ import (
 	"strings"
 
 	toml "github.com/BurntSushi/toml"
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/homeport/gonvenience/pkg/v1/wrap"
+	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/wrap"
 	ordered "github.com/virtuald/go-ordered-json"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -89,7 +89,7 @@ func HumanReadableLocationInformation(inputFile InputFile) string {
 	// Add additional note if it is set
 	if inputFile.Note != "" {
 		buf.WriteString(", ")
-		buf.WriteString(bunt.Colorize(inputFile.Note, bunt.Orange))
+		buf.WriteString(bunt.Sprintf("Orange{%s}", inputFile.Note))
 	}
 
 	// Add an information about how many documents are in the provided input file
@@ -102,7 +102,7 @@ func HumanReadableLocationInformation(inputFile InputFile) string {
 		}
 
 		buf.WriteString(", ")
-		buf.WriteString(bunt.Colorize(str, bunt.Aquamarine, bunt.Bold))
+		buf.WriteString(bunt.Sprintf("Aquamarine{*%s*}", str)  )
 	}
 
 	return buf.String()
@@ -113,17 +113,17 @@ func HumanReadableLocation(location string) string {
 	var buf bytes.Buffer
 
 	if IsStdin(location) {
-		buf.WriteString(bunt.Style("<STDIN>", bunt.Italic))
+		buf.WriteString(bunt.Style("<STDIN>", bunt.Italic()))
 
 	} else if _, err := os.Stat(location); err == nil {
 		if abs, err := filepath.Abs(location); err == nil {
-			buf.WriteString(bunt.Style(abs, bunt.Bold))
+			buf.WriteString(bunt.Style(abs, bunt.Bold()))
 		} else {
-			buf.WriteString(bunt.Style(location, bunt.Bold))
+			buf.WriteString(bunt.Style(location, bunt.Bold()))
 		}
 
 	} else if _, err := url.ParseRequestURI(location); err == nil {
-		buf.WriteString(bunt.Colorize(location, bunt.CornflowerBlue, bunt.Underline))
+		buf.WriteString(bunt.Sprintf("CornflowerBlue{~%s~}", location))
 	}
 
 	return buf.String()

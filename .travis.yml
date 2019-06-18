@@ -1,17 +1,18 @@
 ---
 language: go
 go:
-- 1.11.x
+- 1.12.x
 
 os:
 - linux
 
 install:
-- curl --silent --location https://goo.gl/g1CpPX | bash -s v1.0.5
+- curl --silent --location https://goo.gl/g1CpPX | bash -s v1.0.8
 
 script:
-- GO111MODULE=on go mod download
-- GO111MODULE=on go mod verify
+- export GO111MODULE=on
+- go mod download
+- go mod verify
 - make test
 
 before_deploy:
@@ -25,5 +26,5 @@ deploy:
   file_glob: true
   file: binaries/*
   on:
-    condition: $TRAVIS_GO_VERSION =~ ^1\.11
+    condition: $TRAVIS_GO_VERSION =~ ^1\.12
     tags: true
