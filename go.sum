@@ -14,6 +14,8 @@ github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/gonvenience/bunt v1.0.2 h1:eiWx8+bO2yIlZXCZ/zNITj+F+CnXrqgXO9SpRKhL+sQ=
 github.com/gonvenience/bunt v1.0.2/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
+github.com/gonvenience/bunt v1.0.3 h1:znGNvTMpuO6sQmACV26SpDQBZux7wUkk/0KeerHoh3o=
+github.com/gonvenience/bunt v1.0.3/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
 github.com/gonvenience/neat v1.0.1 h1:zeuWGRLEBhB0STVMEy4I0tvsrcEGYjViB/30CWYdZNs=
 github.com/gonvenience/neat v1.0.1/go.mod h1:hlI131c6A3Cg7SSajncxL9pJFuAnG5kqKUpIwWEnD04=
 github.com/gonvenience/term v1.0.0 h1:joCB/j0Ngmdakd3muuLgAGPMf7DNKdoe708c1I6RiBs=
