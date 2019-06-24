@@ -16,8 +16,12 @@ github.com/gonvenience/bunt v1.0.2 h1:eiWx8+bO2yIlZXCZ/zNITj+F+CnXrqgXO9SpRKhL+s
 github.com/gonvenience/bunt v1.0.2/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
 github.com/gonvenience/bunt v1.0.5 h1:/iP7ROAPvBfpGab3eaFeyJPEOgdWJVpkkFNj8lfboZA=
 github.com/gonvenience/bunt v1.0.5/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
+github.com/gonvenience/bunt v1.0.6 h1:b3KEkaSlbXx3m4s2Gg5NfKkbo3YR3daCbqeecbDG9IE=
+github.com/gonvenience/bunt v1.0.6/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
 github.com/gonvenience/neat v1.0.1 h1:zeuWGRLEBhB0STVMEy4I0tvsrcEGYjViB/30CWYdZNs=
 github.com/gonvenience/neat v1.0.1/go.mod h1:hlI131c6A3Cg7SSajncxL9pJFuAnG5kqKUpIwWEnD04=
+github.com/gonvenience/neat v1.0.3 h1:1ksHRuOGuUQEiHjXKwlsNoFGpZaxE8e9Gvc+6ktU7c8=
+github.com/gonvenience/neat v1.0.3/go.mod h1:QBRLwRxib88dGjs/1ncOjPxDsCUch/0CGJUvg2iOYXY=
 github.com/gonvenience/term v1.0.0 h1:joCB/j0Ngmdakd3muuLgAGPMf7DNKdoe708c1I6RiBs=
 github.com/gonvenience/term v1.0.0/go.mod h1:wohD4Iqso9Eol7qc2VnNhSFFhZxok5PvO7pZhdrAn4E=
 github.com/gonvenience/wrap v1.0.0 h1:N1zDI7z/uPd5ZQa8jII/ye/VENy3wgLXG962vw3ytMM=
@@ -46,6 +50,7 @@ github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+W
 github.com/onsi/gomega v1.5.0 h1:izbySO9zDPmjJ8rDjLvkA2zJHIo+HkYXHnf7eN7SSyo=
 github.com/onsi/gomega v1.5.0/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday v1.5.2/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=
@@ -83,4 +88,5 @@ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/fsnotify.v1 v1.4.7/go.mod h1:Tz8NjZHkW78fSQdbUxIjBTcgA1z1m8ZHf0WmKUhAMys=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7/go.mod h1:dt/ZhP58zS4L8KSrWDmTeBkI65Dw0HsyUHuEVlX15mw=
 gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
+gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
