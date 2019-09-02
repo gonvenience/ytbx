@@ -8,7 +8,7 @@ require (
 	github.com/gonvenience/neat v1.0.3
 	github.com/gonvenience/wrap v1.1.0
 	github.com/gorilla/mux v1.7.3
-	github.com/onsi/ginkgo v1.9.0
+	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
 	github.com/spf13/cobra v0.0.5
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
