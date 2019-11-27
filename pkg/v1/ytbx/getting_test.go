@@ -59,4 +59,10 @@ var _ = Describe("getting stuff test cases", func() {
 			Expect(grabError(example, "/yaml/named-entry-list-using-id/id=0")).To(BeEquivalentTo("there is no entry id=0 in the list"))
 		})
 	})
+	Context("Trying to get values by path in an empty file", func() {
+		It("should return a not found key error", func() {
+			emptyFile := yml("../../../assets/examples/empty.yml")
+			Expect(grabError(emptyFile, "does-not-exist")).To(BeEquivalentTo("no key 'does-not-exist' found in map, available keys: "))
+		})
+	})
 })
