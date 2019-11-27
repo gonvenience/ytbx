@@ -37,7 +37,8 @@ const (
 // GetType returns the type of the input value with a YAML specific view
 func GetType(value interface{}) string {
 	switch tobj := value.(type) {
-	case yaml.MapSlice:
+
+	case yaml.MapSlice, nil:
 		return typeMap
 
 	case []interface{}:
