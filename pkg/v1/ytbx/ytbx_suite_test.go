@@ -25,7 +25,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -36,8 +35,6 @@ import (
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
 	yaml "gopkg.in/yaml.v2"
 )
-
-var assetsDirectory string
 
 var exampleTOML = `
 required = ["gopkg.in/fsnotify.v1"]
@@ -80,15 +77,25 @@ func TestYtbx(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	bunt.ColorSetting = bunt.OFF
-
-	_, file, _, ok := runtime.Caller(0)
-	Expect(ok).To(BeTrue())
-
-	dir, err := filepath.Abs(filepath.Dir(file) + "/../../../assets")
-	Expect(err).To(BeNil())
-
-	assetsDirectory = dir
+	bunt.TrueColorSetting = bunt.OFF
 })
+
+var _ = AfterSuite(func() {
+	bunt.ColorSetting = bunt.AUTO
+	bunt.TrueColorSetting = bunt.AUTO
+})
+
+func assets(pathElement ...string) string {
+	targetPath := filepath.Join(append(
+		[]string{"..", "..", "..", "assets"},
+		pathElement...,
+	)...)
+
+	abs, err := filepath.Abs(targetPath)
+	Expect(err).ToNot(HaveOccurred())
+
+	return abs
+}
 
 func yml(input string) yaml.MapSlice {
 	// If input is a file loacation, load this as YAML

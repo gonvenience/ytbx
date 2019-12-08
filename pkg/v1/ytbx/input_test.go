@@ -58,7 +58,7 @@ var _ = Describe("Input test cases", func() {
 				directory := vars["directory"]
 				filename := vars["filename"]
 
-				location := "../../../assets/" + directory + "/" + filename
+				location := assets(directory, filename)
 				if _, err := os.Stat(location); os.IsNotExist(err) {
 					w.WriteHeader(404)
 					fmt.Fprintf(w, "File not found: %s/%s", directory, filename)
