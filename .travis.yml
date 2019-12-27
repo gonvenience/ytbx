@@ -19,6 +19,11 @@ script:
 - go mod verify
 - make test
 
+after_success:
+- for FILE in $(find . -type f -name "*.coverprofile" 2>/dev/null); do echo >>$FILE; done
+- gover . coverage.txt
+- bash <(curl -s https://codecov.io/bash)
+
 before_deploy:
 - make build
 

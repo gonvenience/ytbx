@@ -34,14 +34,16 @@ verify:
 	@GO111MODULE=on go mod verify
 
 test: $(sources)
-	@GO111MODULE=on ginkgo -r \
-	  -randomizeAllSpecs \
-	  -randomizeSuites \
-	  -failOnPending \
-	  -trace \
-	  -race \
-	  -nodes=2 \
-	  -compilers=2
+	@GO111MODULE=on ginkgo \
+		-r \
+		-randomizeAllSpecs \
+		-randomizeSuites \
+		-failOnPending \
+		-trace \
+		-race \
+		-nodes=4 \
+		-compilers=2 \
+		-cover
 
 binaries/ytbx-linux-amd64: $(sources)
 	@GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
