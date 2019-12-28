@@ -21,94 +21,19 @@
 package ytbx
 
 import (
-	"sort"
-
-	ordered "github.com/virtuald/go-ordered-json"
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// mapSlicify makes sure that each occurrence of a map in the provided structure
-// is changed to a YAML MapSlice.
-//
-// Please note: In case the input data were decoded by the default standard JSON
-// parser, there will be no preservation of the order of keys, because JSON does
-// not support such thing as an order of keys. Therfore, the keys are sorted to
-// have a consistent and testable output structure.
-//
-// This function supports `OrderedObjects` from the JSON library fork
-// `github.com/virtuald/go-ordered-json` and will translate this structure into
-// the compatible YAML structure.
-func mapSlicify(obj interface{}) interface{} {
-	switch tobj := obj.(type) {
-	case ordered.OrderedObject:
-		result := make(yaml.MapSlice, 0, len(tobj))
-		for _, member := range tobj {
-			result = append(result, yaml.MapItem{Key: member.Key, Value: mapSlicify(member.Value)})
-		}
-
-		return result
-
-	case map[string]interface{}:
-		return mapToYamlSlice(tobj)
-
-	case []interface{}:
-		result := make([]interface{}, len(tobj))
-		for idx, entry := range tobj {
-			result[idx] = mapSlicify(entry)
-		}
-
-		return result
-
-	case []map[string]interface{}:
-		result := make([]yaml.MapSlice, len(tobj))
-		for idx, entry := range tobj {
-			result[idx] = mapToYamlSlice(entry)
-		}
-
-		return result
-
-	default:
-		return obj
-	}
-}
-
-func mapToYamlSlice(input map[string]interface{}) yaml.MapSlice {
-	keys := make([]string, 0, len(input))
-	for key := range input {
-		keys = append(keys, key)
+func asYAMLNode(obj interface{}) (*yamlv3.Node, error) {
+	data, err := yamlv3.Marshal(obj)
+	if err != nil {
+		return nil, err
 	}
 
-	sort.Strings(keys)
-
-	result := make(yaml.MapSlice, 0, len(input))
-	for _, key := range keys {
-		result = append(result, yaml.MapItem{Key: key, Value: mapSlicify(input[key])})
+	var node yamlv3.Node
+	if err := yamlv3.Unmarshal(data, &node); err != nil {
+		return nil, err
 	}
 
-	return result
-}
-
-func castAsComplexList(obj interface{}) ([]yaml.MapSlice, bool) {
-	switch tobj := obj.(type) {
-	case []yaml.MapSlice:
-		return tobj, true
-
-	case []interface{}:
-		if IsComplexSlice(tobj) {
-			result := make([]yaml.MapSlice, len(tobj))
-			for idx, entry := range tobj {
-				switch x := entry.(type) {
-				case yaml.MapSlice:
-					result[idx] = x
-
-				case map[string]interface{}:
-					result[idx] = mapToYamlSlice(x)
-				}
-			}
-
-			return result, true
-		}
-	}
-
-	return nil, false
+	return &node, nil
 }

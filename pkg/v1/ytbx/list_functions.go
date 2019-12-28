@@ -23,29 +23,30 @@ package ytbx
 import (
 	"fmt"
 
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// GetIdentifierFromNamedList returns the identifier key used in the provided list, or an empty string if there is none. The identifier key is either 'name', 'key', or 'id'.
-func GetIdentifierFromNamedList(list []interface{}) string {
-	counters := map[interface{}]int{}
+// GetIdentifierFromNamedList returns the identifier key used in the provided
+// list, or an empty string if there is none.
+// The identifier key is either 'name', 'key', or 'id'.
+func GetIdentifierFromNamedList(sequenceNode *yamlv3.Node) string {
+	counters := map[string]int{}
 
-	for _, sliceEntry := range list {
-		switch mapslice := sliceEntry.(type) {
-		case yaml.MapSlice:
-			for _, mapSliceEntry := range mapslice {
-				if _, ok := counters[mapSliceEntry.Key]; !ok {
-					counters[mapSliceEntry.Key] = 0
-				}
+	for _, mappingNode := range sequenceNode.Content {
+		for i := 0; i < len(mappingNode.Content); i += 2 {
+			k := mappingNode.Content[i]
 
-				counters[mapSliceEntry.Key]++
+			if _, ok := counters[k.Value]; !ok {
+				counters[k.Value] = 0
 			}
+
+			counters[k.Value]++
 		}
 	}
 
-	sliceLength := len(list)
+	listLength := len(sequenceNode.Content)
 	for _, identifier := range []string{"name", "key", "id"} {
-		if count, ok := counters[identifier]; ok && count == sliceLength {
+		if count, ok := counters[identifier]; ok && count == listLength {
 			return identifier
 		}
 	}
@@ -53,66 +54,46 @@ func GetIdentifierFromNamedList(list []interface{}) string {
 	return ""
 }
 
-// ListStringKeys returns a list of the keys of the YAML MapSlice (map). Only string keys are supported. Other types will result in an error.
-func ListStringKeys(mapslice yaml.MapSlice) ([]string, error) {
-	keys := make([]string, len(mapslice))
-	for i, mapitem := range mapslice {
-		switch mapitem.Key.(type) {
-		case string:
-			keys[i] = mapitem.Key.(string)
-
-		default:
-			return nil, fmt.Errorf("provided mapslice mapitem contains non-string key: %#v", mapitem.Key)
-		}
-	}
-
-	return keys, nil
+// getEntryFromNamedList returns the entry that is identified by the identifier
+// key and a name, for example: `name: one` where name is the identifier key and
+// one the name. Function will return nil with bool false if there is no entry.
+func getEntryFromNamedList(sequenceNode *yamlv3.Node, identifier string, name string) (*yamlv3.Node, bool) {
+	node, err := getEntryByIdentifierAndName(sequenceNode, identifier, name)
+	return node, err == nil
 }
 
-// getEntryFromNamedList returns the entry that is identified by the identifier key and a name, for example: `name: one` where name is the identifier key and one the name. Function will return nil with bool false if there is no such entry.
-func getEntryFromNamedList(list []interface{}, identifier string, name interface{}) (interface{}, bool) {
-	for _, listEntry := range list {
-		mapslice := listEntry.(yaml.MapSlice)
-
-		for _, element := range mapslice {
-			if element.Key == identifier && element.Value == name {
-				return mapslice, true
+func getEntryByIdentifierAndName(sequenceNode *yamlv3.Node, identifier string, name string) (*yamlv3.Node, error) {
+	for _, mappingNode := range sequenceNode.Content {
+		for i := 0; i < len(mappingNode.Content); i += 2 {
+			k, v := mappingNode.Content[i], mappingNode.Content[i+1]
+			if k.Value == identifier && v.Value == name {
+				return mappingNode, nil
 			}
 		}
 	}
 
-	return nil, false
+	return nil,
+		fmt.Errorf("there is no entry %s=%v in the list",
+			identifier,
+			name,
+		)
 }
 
-func listNamesOfNamedList(list []interface{}, identifier string) ([]string, error) {
-	result := make([]string, len(list))
-	for i, entry := range list {
-		switch entry.(type) {
-		case yaml.MapSlice:
-			value, err := getValueByKey(entry.(yaml.MapSlice), identifier)
-			if err != nil {
-				return nil, err
-			}
+func listNamesOfNamedList(sequenceNode *yamlv3.Node, identifier string) ([]string, error) {
+	result := make([]string, len(sequenceNode.Content))
 
-			result[i] = value.(string)
-
-		default:
+	for i, mappingNode := range sequenceNode.Content {
+		if mappingNode.Kind != yamlv3.MappingNode {
 			return nil, &NoNamedEntryListError{}
 		}
+
+		v, err := getValueByKey(mappingNode, identifier)
+		if err != nil {
+			return nil, err
+		}
+
+		result[i] = v.Value
 	}
 
 	return result, nil
-}
-
-func splitEntryIntoNameAndData(mapslice yaml.MapSlice, identifier string) (name interface{}, result yaml.MapSlice) {
-	for _, mapitem := range mapslice {
-		if key, ok := mapitem.Key.(string); ok && key == identifier {
-			name = mapitem.Value
-
-		} else {
-			result = append(result, mapitem)
-		}
-	}
-
-	return name, result
 }

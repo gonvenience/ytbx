@@ -24,16 +24,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
+	"strconv"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/types"
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
 	"github.com/homeport/ytbx/pkg/v1/ytbx"
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
 var exampleTOML = `
@@ -97,8 +98,8 @@ func assets(pathElement ...string) string {
 	return abs
 }
 
-func yml(input string) yaml.MapSlice {
-	// If input is a file loacation, load this as YAML
+func yml(input string) *yamlv3.Node {
+	// If input is a file location, load this as YAML
 	if _, err := os.Open(input); err == nil {
 		var content ytbx.InputFile
 		var err error
@@ -110,41 +111,20 @@ func yml(input string) yaml.MapSlice {
 			Fail(fmt.Sprintf("Failed to load YAML MapSlice from '%s': Provided file contains more than one document", input))
 		}
 
-		switch content.Documents[0].(type) {
-		case yaml.MapSlice:
-			return content.Documents[0].(yaml.MapSlice)
-		}
-
-		Fail(fmt.Sprintf("Failed to load YAML MapSlice from '%s': Document #0 in YAML is not of type MapSlice, but is %s", input, reflect.TypeOf(content.Documents[0])))
+		return content.Documents[0]
 	}
 
 	// Load YAML by parsing the actual string as YAML if it was not a file location
-	doc := singleDoc(input)
-	switch mapslice := doc.(type) {
-	case yaml.MapSlice:
-		return mapslice
-	}
-
-	Fail(fmt.Sprintf("Failed to use YAML, parsed data is not a YAML MapSlice:\n%s\n", input))
-	return nil
+	document := singleDoc(input)
+	return document.Content[0]
 }
 
-func list(input string) []interface{} {
-	doc := singleDoc(input)
-
-	switch tobj := doc.(type) {
-	case []interface{}:
-		return tobj
-
-	case []yaml.MapSlice:
-		return ytbx.SimplifyList(tobj)
-	}
-
-	Fail(fmt.Sprintf("Failed to use YAML, parsed data is not a slice of any kind:\n%s\nIt was parsed as: %#v", input, doc))
-	return nil
+func list(input string) *yamlv3.Node {
+	document := singleDoc(input)
+	return document.Content[0]
 }
 
-func singleDoc(input string) interface{} {
+func singleDoc(input string) *yamlv3.Node {
 	docs, err := ytbx.LoadYAMLDocuments([]byte(input))
 	if err != nil {
 		Fail(fmt.Sprintf("Failed to parse as YAML:\n%s\n\n%v", input, err))
@@ -157,18 +137,93 @@ func singleDoc(input string) interface{} {
 	return docs[0]
 }
 
-func grab(obj interface{}, path string) interface{} {
-	value, err := ytbx.Grab(obj, path)
+func grab(node *yamlv3.Node, path string) interface{} {
+	v, err := ytbx.Grab(node, path)
 	if err != nil {
-		out, _ := neat.ToYAMLString(obj)
+		out, _ := neat.ToYAMLString(node)
 		Fail(fmt.Sprintf("Failed to grab by path %s from %s", path, out))
 	}
 
-	return value
+	switch v.Tag {
+	case "!!str":
+		return v.Value
+
+	case "!!int":
+		i, _ := strconv.Atoi(v.Value)
+		return i
+	}
+
+	return v
 }
 
-func grabError(obj interface{}, path string) string {
-	value, err := ytbx.Grab(obj, path)
+func grabError(node *yamlv3.Node, path string) string {
+	value, err := ytbx.Grab(node, path)
 	Expect(value).To(BeNil())
 	return err.Error()
+}
+
+func BeAsNode(expected *yamlv3.Node) GomegaMatcher {
+	return &nodeMatcher{
+		expected: expected,
+	}
+}
+
+type nodeMatcher struct {
+	expected *yamlv3.Node
+}
+
+func (matcher *nodeMatcher) Match(actual interface{}) (success bool, err error) {
+	actualNodePtr, ok := actual.(*yamlv3.Node)
+	if !ok {
+		return false, fmt.Errorf("BeAsNode matcher expected a Go YAML v3 Node, not %T", actual)
+	}
+
+	return isSameNode(actualNodePtr, matcher.expected)
+}
+
+func (matcher *nodeMatcher) FailureMessage(actual interface{}) string {
+	return fmt.Sprintf("Expected\n\t%#v\nto be same as\n\t%#v",
+		actual,
+		matcher.expected)
+}
+
+func (matcher *nodeMatcher) NegatedFailureMessage(actual interface{}) string {
+	return fmt.Sprintf("Expected\n\t%#v\nnot to be same as\n\t%#v",
+		actual,
+		matcher.expected,
+	)
+}
+
+func isSameNode(a, b *yamlv3.Node) (bool, error) {
+	if a == nil && b == nil {
+		return true, nil
+	}
+
+	if (a == nil && b != nil) || (a != nil && b == nil) {
+		return false, nil
+	}
+
+	if a.Kind != b.Kind {
+		return false, nil
+	}
+
+	if a.Tag != b.Tag {
+		return false, nil
+	}
+
+	if a.Value != b.Value {
+		return false, nil
+	}
+
+	if len(a.Content) != len(b.Content) {
+		return false, nil
+	}
+
+	for i := range a.Content {
+		if same, err := isSameNode(a.Content[i], b.Content[i]); !same {
+			return same, err
+		}
+	}
+
+	return true, nil
 }

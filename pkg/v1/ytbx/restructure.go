@@ -21,15 +21,13 @@
 package ytbx
 
 import (
-	"encoding/json"
 	"sort"
 
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// DisableRemainingKeySort disables that that during restructuring of map keys,
-// all unknown keys are also sorted in such a way that it ideally improves the
-// readability.
+// DisableRemainingKeySort disables that during restructuring of map keys, all
+// unknown keys are also sorted in such a way that it improves the readability.
 var DisableRemainingKeySort = false
 
 var knownKeyOrders = [][]string{
@@ -66,6 +64,30 @@ func lookupMap(list []string) map[string]int {
 	return result
 }
 
+func lookupMapOfContentList(list []*yamlv3.Node) map[string]int {
+	lookup := make(map[string]int, len(list))
+	for i := 0; i < len(list); i += 2 {
+		lookup[list[i].Value] = i
+	}
+
+	return lookup
+}
+
+func maxDepth(node *yamlv3.Node) (max int) {
+	rootPath, _ := ParseGoPatchStylePathString("/")
+	traverseTree(
+		rootPath,
+		node,
+		func(p Path, _ *yamlv3.Node) {
+			if depth := len(p.PathElements); depth > max {
+				max = depth
+			}
+		},
+	)
+
+	return max
+}
+
 func countCommonKeys(keys []string, list []string) int {
 	counter, lookup := 0, lookupMap(keys)
 	for _, key := range list {
@@ -88,45 +110,41 @@ func commonKeys(setA []string, setB []string) []string {
 	return result
 }
 
-func reorderMapsliceKeys(input yaml.MapSlice, keys []string) yaml.MapSlice {
-	// Create list with all remaining keys: those that are part of the input
-	// YAML MapSlice, but not listed in the keys list
-	remainingKeys, lookup := []string{}, lookupMap(keys)
-	for _, mapitem := range input {
-		key := mapitem.Key.(string)
-		if _, ok := lookup[key]; !ok {
+func reorderKeyValuePairsInMappingNodeContent(mappingNode *yamlv3.Node, keys []string) {
+	// Create list with all keys, that are not part of the provided list of keys
+	remainingKeys, keysLookup := []string{}, lookupMap(keys)
+	for i := 0; i < len(mappingNode.Content); i += 2 {
+		key := mappingNode.Content[i].Value
+		if _, ok := keysLookup[key]; !ok {
 			remainingKeys = append(remainingKeys, key)
 		}
 	}
 
 	// Sort remaining keys by sorting long and possibly hard to read structure
-	// to the end of the map
+	// to the end of the mapping
 	if !DisableRemainingKeySort {
 		sort.Slice(remainingKeys, func(i, j int) bool {
-			valI, _ := getValueByKey(input, remainingKeys[i])
-			valJ, _ := getValueByKey(input, remainingKeys[j])
-			marI, _ := json.Marshal(valI)
-			marJ, _ := json.Marshal(valJ)
-			return len(marI) < len(marJ)
+			valI, _ := getValueByKey(mappingNode, remainingKeys[i])
+			valJ, _ := getValueByKey(mappingNode, remainingKeys[j])
+			return maxDepth(valI) < maxDepth(valJ)
 		})
 	}
 
-	// Rebuild a new YAML MapSlice key by key by using first the keys from the
-	// reorder list and then all remaining keys
-	result := yaml.MapSlice{}
+	// Rebuild a new YAML Node list (content) key by key by using first the keys
+	// from the reorder list and then all remaining keys
+	content, contentLookup := []*yamlv3.Node{}, lookupMapOfContentList(mappingNode.Content)
 	for _, key := range append(keys, remainingKeys...) {
-		// Ignore the error field here since we know what keys there are
-		value, _ := getValueByKey(input, key)
-		result = append(result, yaml.MapItem{
-			Key:   key,
-			Value: value,
-		})
+		idx := contentLookup[key]
+		content = append(content,
+			mappingNode.Content[idx],
+			mappingNode.Content[idx+1],
+		)
 	}
 
-	return result
+	mappingNode.Content = content
 }
 
-func getSuitableReorderFunction(keys []string) func(yaml.MapSlice) yaml.MapSlice {
+func getSuitableReorderFunction(keys []string) func(*yamlv3.Node) {
 	topCandidateIdx, topCandidateHits := -1, -1
 	for idx, candidate := range knownKeyOrders {
 		if count := countCommonKeys(keys, candidate); count > topCandidateHits {
@@ -136,45 +154,40 @@ func getSuitableReorderFunction(keys []string) func(yaml.MapSlice) yaml.MapSlice
 	}
 
 	if topCandidateIdx >= 0 {
-		return func(input yaml.MapSlice) yaml.MapSlice {
-			return reorderMapsliceKeys(input, commonKeys(knownKeyOrders[topCandidateIdx], keys))
+		return func(input *yamlv3.Node) {
+			reorderKeyValuePairsInMappingNodeContent(
+				input,
+				commonKeys(knownKeyOrders[topCandidateIdx], keys),
+			)
 		}
 	}
 
 	return nil
 }
 
-// RestructureObject takes an object and traverses down any sub elements such as list entries or map values to recursively call restructure itself. On YAML MapSlices (maps), it will use a look-up mechanism to decide if the order of key in that map needs to be rearranged to meet some known established human order.
-func RestructureObject(obj interface{}) interface{} {
-	switch val := obj.(type) {
-	case yaml.MapSlice:
-		// Restructure the YAML MapSlice keys
-		if keys, err := ListStringKeys(val); err == nil {
-			if fn := getSuitableReorderFunction(keys); fn != nil {
-				val = fn(val)
-			}
+// RestructureObject takes an object and traverses down any sub elements such as
+// list entries or map values to recursively call restructure itself. On YAML
+// MappingNodes, it will use a look-up mechanism to decide if the order of key
+// in that map need to be rearranged to meet some known established human order.
+func RestructureObject(node *yamlv3.Node) {
+	switch node.Kind {
+	case yamlv3.DocumentNode:
+		RestructureObject(node.Content[0])
+
+	case yamlv3.MappingNode:
+		keys := listKeys(node)
+		if fn := getSuitableReorderFunction(keys); fn != nil {
+			fn(node)
 		}
 
 		// Restructure the values of the respective keys of this YAML MapSlice
-		for idx := range val {
-			val[idx].Value = RestructureObject(val[idx].Value)
+		for i := 0; i < len(node.Content); i += 2 {
+			RestructureObject(node.Content[i+1])
 		}
 
-		return val
-
-	case []interface{}:
-		for i := range val {
-			val[i] = RestructureObject(val[i])
+	case yamlv3.SequenceNode:
+		for i := range node.Content {
+			RestructureObject(node.Content[i])
 		}
-		return val
-
-	case []yaml.MapSlice:
-		for i := range val {
-			val[i] = RestructureObject(val[i]).(yaml.MapSlice)
-		}
-		return val
-
-	default:
-		return obj
 	}
 }

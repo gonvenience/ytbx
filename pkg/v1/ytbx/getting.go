@@ -23,45 +23,66 @@ package ytbx
 import (
 	"fmt"
 
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// Grab get the value from the provided YAML tree using a path to traverse through the tree structure
-func Grab(obj interface{}, pathString string) (interface{}, error) {
-	path, err := ParsePathString(pathString, obj)
+// Grab gets the value from the provided YAML tree using a path to traverse
+// through the tree structure
+func Grab(node *yamlv3.Node, pathString string) (*yamlv3.Node, error) {
+	path, err := ParsePathString(pathString, node)
 	if err != nil {
 		return nil, err
 	}
 
-	return grabByPath(obj, path)
+	if node.Kind == yamlv3.DocumentNode {
+		if len(node.Content) != 1 {
+			panic("unsure of implementation detail document node with multiple nodes")
+		}
+
+		entry := node.Content[0]
+		return grabByPath(entry, path)
+	}
+
+	return grabByPath(node, path)
 }
 
-func grabByPath(obj interface{}, path Path) (interface{}, error) {
-	pointer, pointerPath := obj, Path{DocumentIdx: path.DocumentIdx}
+func grabByPath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
+	pointer := node
+	pointerPath := Path{DocumentIdx: path.DocumentIdx}
 
 	for _, element := range path.PathElements {
 		switch {
 		// Key/Value Map, where the element name is the key for the map
 		case element.isMapElement():
-			if !isMapSlice(pointer) {
-				return nil, fmt.Errorf("failed to traverse tree, expected a %s but found type %s at %s", typeMap, GetType(pointer), pointerPath.ToGoPatchStyle())
+			if pointer.Kind != yamlv3.MappingNode {
+				return nil,
+					fmt.Errorf("failed to traverse tree, expected %s but found type %s at %s",
+						typeMap,
+						GetType(pointer),
+						pointerPath.ToGoPatchStyle(),
+					)
 			}
 
-			entry, err := getValueByKey(pointer.(yaml.MapSlice), element.Name)
+			entry, err := getValueByKey(pointer, element.Name)
 			if err != nil {
 				return nil, err
 			}
 
 			pointer = entry
 
-		// Complex List, where each list entry is a Key/Value map and the entry is identified by name using an indentifier (e.g. name, key, or id)
+		// Complex List, where each list entry is a Key/Value map and the entry is
+		// identified by name using an indentifier (e.g. name, key, or id)
 		case element.isComplexListElement():
-			complexList, ok := castAsComplexList(pointer)
-			if !ok {
-				return nil, fmt.Errorf("failed to traverse tree, expected a %s but found type %s at %s", typeComplexList, GetType(pointer), pointerPath.ToGoPatchStyle())
+			if pointer.Kind != yamlv3.SequenceNode {
+				return nil,
+					fmt.Errorf("failed to traverse tree, expected %s but found type %s at %s",
+						typeComplexList,
+						GetType(pointer),
+						pointerPath.ToGoPatchStyle(),
+					)
 			}
 
-			entry, err := getEntryByIdentifierAndName(complexList, element.Key, element.Name)
+			entry, err := getEntryByIdentifierAndName(pointer, element.Key, element.Name)
 			if err != nil {
 				return nil, err
 			}
@@ -70,22 +91,31 @@ func grabByPath(obj interface{}, path Path) (interface{}, error) {
 
 		// Simple List (identified by index)
 		case element.isSimpleListElement():
-			if !isList(pointer) {
-				return nil, fmt.Errorf("failed to traverse tree, expected a %s but found type %s at %s", typeSimpleList, GetType(pointer), pointerPath.ToGoPatchStyle())
+			if pointer.Kind != yamlv3.SequenceNode {
+				return nil,
+					fmt.Errorf("failed to traverse tree, expected %s but found type %s at %s",
+						typeSimpleList,
+						GetType(pointer),
+						pointerPath.ToGoPatchStyle(),
+					)
 			}
 
-			list := pointer.([]interface{})
-			if element.Idx < 0 || element.Idx >= len(list) {
-				return nil, fmt.Errorf("failed to traverse tree, provided %s index %d is not in range: 0..%d", typeSimpleList, element.Idx, len(list)-1)
+			if element.Idx < 0 || element.Idx >= len(pointer.Content) {
+				return nil,
+					fmt.Errorf("failed to traverse tree, provided %s index %d is not in range: 0..%d",
+						typeSimpleList,
+						element.Idx,
+						len(pointer.Content)-1,
+					)
 			}
 
-			pointer = list[element.Idx]
+			pointer = pointer.Content[element.Idx]
 
 		default:
 			return nil, fmt.Errorf("failed to traverse tree, the provided path %s seems to be invalid", path)
 		}
 
-		// Update the path that the current pointer has (only used in error case to point to the right position)
+		// Update the path that the current pointer to keep track of the traversing
 		pointerPath.PathElements = append(pointerPath.PathElements, element)
 	}
 

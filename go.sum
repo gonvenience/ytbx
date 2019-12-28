@@ -11,8 +11,8 @@ github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMo
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/gonvenience/bunt v1.1.1 h1:isYxOpDqbRMOSRhZtoux1tYvhhQ/AIbVDFrs24l6t0M=
 github.com/gonvenience/bunt v1.1.1/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
-github.com/gonvenience/neat v1.1.0 h1:xuEH2rYPedbIwuaYBJAtGwCJHwRlo8jF5PScLizuI5Y=
-github.com/gonvenience/neat v1.1.0/go.mod h1:Yb+9Jlr04pbtcRU8EGosVheOEBs//Lw/OXvgDyQfLTQ=
+github.com/gonvenience/neat v1.1.1 h1:uX5uxp3/KVMNgvfFceA5gkFeSofaqREIhOWepZafYlE=
+github.com/gonvenience/neat v1.1.1/go.mod h1:Yb+9Jlr04pbtcRU8EGosVheOEBs//Lw/OXvgDyQfLTQ=
 github.com/gonvenience/term v1.0.0 h1:joCB/j0Ngmdakd3muuLgAGPMf7DNKdoe708c1I6RiBs=
 github.com/gonvenience/term v1.0.0/go.mod h1:wohD4Iqso9Eol7qc2VnNhSFFhZxok5PvO7pZhdrAn4E=
 github.com/gonvenience/wrap v1.1.0 h1:d8gEZrXS/zg4BC1q0U4nHpPIh5k6muKpQ1+rQFBwpYc=
