@@ -21,7 +21,7 @@
 .PHONY: all clean test verify build
 
 version := $(shell git describe --tags --abbrev=0 2>/dev/null || (git rev-parse HEAD | cut -c-8))
-sources := $(wildcard cmd/ytbx/*.go internal/cmd/*.go pkg/v1/ytbx/*.go)
+sources := $(wildcard cmd/ytbx/*.go internal/cmd/*.go pkg/ytbx/*.go)
 
 all: clean verify test build
 

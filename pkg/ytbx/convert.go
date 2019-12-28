@@ -18,45 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package cmd
+package ytbx
 
 import (
-	"fmt"
-
-	"github.com/gonvenience/wrap"
-	"github.com/homeport/ytbx/pkg/ytbx"
-	"github.com/spf13/cobra"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// pathsCmd represents the paths command
-var pathsCmd = &cobra.Command{
-	Use:   "paths <file>",
-	Args:  cobra.ExactArgs(1),
-	Short: "List all paths to values",
-	Long: `Lists all paths to values for example a YAML file like
----
-yaml:
-  structure:
-    somekey: foobar
+func asYAMLNode(obj interface{}) (*yamlv3.Node, error) {
+	data, err := yamlv3.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
 
-would list you one path: /yaml/structure/somekey
-`,
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		list, err := ytbx.ListPaths(args[0], ytbx.GoPatchStyle)
-		if err != nil {
-			return wrap.Error(err, "failed to get paths from file")
-		}
+	var node yamlv3.Node
+	if err := yamlv3.Unmarshal(data, &node); err != nil {
+		return nil, err
+	}
 
-		for _, entry := range list {
-			fmt.Println(entry.ToGoPatchStyle())
-		}
-
-		return nil
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(pathsCmd)
+	return &node, nil
 }

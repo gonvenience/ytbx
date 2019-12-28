@@ -21,40 +21,37 @@
 package ytbx
 
 import (
-	"fmt"
-
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// listKeys returns a list of the keys of the YAML MapSlice (map).
-func listKeys(mapslice yaml.MapSlice) []string {
-	keys := make([]string, len(mapslice))
-	for i, mapitem := range mapslice {
-		keys[i] = fmt.Sprintf("%v", mapitem.Key)
+// listKeys returns a list of the keys of a Go-YAML v3 MappingNode (map)
+func listKeys(mappingNode *yamlv3.Node) []string {
+	keys := []string{}
+	for i := 0; i < len(mappingNode.Content); i += 2 {
+		keys = append(keys, mappingNode.Content[i].Value)
 	}
 
 	return keys
 }
 
-// getValueByKey returns the value for a given key in a provided MapSlice, or nil with an error if there is no such entry. This is comparable to getting a value from a map with `foobar[key]`.
-func getValueByKey(mapslice yaml.MapSlice, key string) (interface{}, error) {
-	for _, element := range mapslice {
-		if element.Key == key {
-			return element.Value, nil
-		}
-	}
-
-	return nil, &KeyNotFoundInMapError{MissingKey: key, AvailableKeys: listKeys(mapslice)}
+// ListStringKeys lists the keys in a MappingNode
+func ListStringKeys(mappingNode *yamlv3.Node) ([]string, error) {
+	return listKeys(mappingNode), nil
 }
 
-func getEntryByIdentifierAndName(list []yaml.MapSlice, identifier string, name interface{}) (yaml.MapSlice, error) {
-	for _, mapslice := range list {
-		for _, element := range mapslice {
-			if element.Key == identifier && element.Value == name {
-				return mapslice, nil
-			}
+// getValueByKey returns the value for a given key in a provided mapping node,
+// or nil with an error if there is no such entry. This is comparable to getting
+// a value from a map with `foobar[key]`.
+func getValueByKey(mappingNode *yamlv3.Node, key string) (*yamlv3.Node, error) {
+	for i := 0; i < len(mappingNode.Content); i += 2 {
+		k, v := mappingNode.Content[i], mappingNode.Content[i+1]
+		if k.Value == key {
+			return v, nil
 		}
 	}
 
-	return nil, fmt.Errorf("there is no entry %s=%v in the list", identifier, name)
+	return nil, &KeyNotFoundInMapError{
+		MissingKey:    key,
+		AvailableKeys: listKeys(mappingNode),
+	}
 }

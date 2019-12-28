@@ -24,12 +24,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/homeport/ytbx/pkg/v1/ytbx"
+	. "github.com/homeport/ytbx/pkg/ytbx"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
-func getExampleDocument() interface{} {
+func getExampleDocument() *yamlv3.Node {
 	input, err := LoadFile(assets("testbed", "example.yml"))
-	Expect(err).To(BeNil())
+	Expect(err).ToNot(HaveOccurred())
 	Expect(len(input.Documents)).To(BeIdenticalTo(1))
 
 	return input.Documents[0]
@@ -68,7 +69,7 @@ var _ = Describe("path tests", func() {
 
 		It("should parse string with non-existing map elements", func() {
 			path, err := ParseDotStylePathString("yaml.update.newkey", getExampleDocument())
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(path).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
 				{Idx: -1, Key: "", Name: "yaml"},
 				{Idx: -1, Key: "", Name: "update"},
@@ -189,7 +190,8 @@ var _ = Describe("path tests", func() {
 						{Idx: -1, Key: "", Name: "yaml"},
 						{Idx: -1, Key: "", Name: "structure"},
 						{Idx: -1, Key: "", Name: "dot"},
-					}},
+					},
+				},
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
 						{Idx: -1, Key: "", Name: "list"},

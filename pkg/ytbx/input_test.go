@@ -31,8 +31,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/gorilla/mux"
-	. "github.com/homeport/ytbx/pkg/v1/ytbx"
-	yaml "gopkg.in/yaml.v2"
+	. "github.com/homeport/ytbx/pkg/ytbx"
 )
 
 var _ = Describe("Input test cases", func() {
@@ -41,10 +40,10 @@ var _ = Describe("Input test cases", func() {
 			doc0, doc1 := `{ "key": "value" }`, `[ { "foo": "bar" } ]`
 
 			documents, err := LoadDocuments([]byte(doc0 + "\n" + doc1))
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(len(documents)).To(BeEquivalentTo(2))
-			Expect(documents[0]).To(BeEquivalentTo(yml(doc0)))
-			Expect(documents[1]).To(BeEquivalentTo(list(doc1)))
+			Expect(documents[0].Content[0]).To(BeAsNode(yml(doc0)))
+			Expect(documents[1].Content[0]).To(BeAsNode(list(doc1)))
 		})
 	})
 
@@ -102,16 +101,9 @@ var _ = Describe("Input test cases", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(documents)).To(BeEquivalentTo(1))
 
-			document := documents[0]
-
-			Expect(document).To(BeAssignableToTypeOf(yaml.MapSlice{}))
-			root := documents[0].(yaml.MapSlice)
-
-			Expect(root[0].Key).To(BeEquivalentTo("constraint"))
-			Expect(root[0].Value).To(BeAssignableToTypeOf([]yaml.MapSlice{}))
-
-			Expect(root[1].Key).To(BeEquivalentTo("override"))
-			Expect(root[1].Value).To(BeAssignableToTypeOf([]yaml.MapSlice{}))
+			rootMap := documents[0].Content[0]
+			Expect(rootMap.Content[0].Value).To(BeEquivalentTo("constraint"))
+			Expect(rootMap.Content[2].Value).To(BeEquivalentTo("override"))
 		})
 	})
 })

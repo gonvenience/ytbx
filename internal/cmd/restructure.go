@@ -29,9 +29,9 @@ import (
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
-	"github.com/homeport/ytbx/pkg/v1/ytbx"
+	"github.com/homeport/ytbx/pkg/ytbx"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
 var inplace bool
@@ -53,7 +53,7 @@ var restructureCmd = &cobra.Command{
 		}
 
 		for i := range input.Documents {
-			input.Documents[i] = ytbx.RestructureObject(input.Documents[i])
+			ytbx.RestructureObject(input.Documents[i])
 		}
 
 		if inplace {
@@ -65,12 +65,12 @@ var restructureCmd = &cobra.Command{
 			var buf bytes.Buffer
 			writer := bufio.NewWriter(&buf)
 			for _, document := range input.Documents {
-				out, err := yaml.Marshal(document)
+				out, err := yamlv3.Marshal(document)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprint(writer, "---\n", string(out))
+				fmt.Fprint(writer, string(out))
 			}
 
 			writer.Flush()
@@ -83,7 +83,6 @@ var restructureCmd = &cobra.Command{
 					return err
 				}
 
-				bunt.Println("DimGray{*---*}")
 				fmt.Print(out)
 				fmt.Println()
 			}
@@ -104,8 +103,8 @@ func init() {
 }
 
 func renderLongDescription() string {
-	var data yaml.MapSlice
-	yaml.Unmarshal([]byte(`---
+	var data yamlv3.Node
+	yamlv3.Unmarshal([]byte(`---
 releases:
 - sha1: 5ab3b7e685ca18a47d0b4a16d0e3b60832b0a393
   name: binary-buildpack
@@ -114,7 +113,9 @@ releases:
 `), &data)
 
 	before, _ := neat.ToYAMLString(data)
-	after, _ := neat.ToYAMLString(ytbx.RestructureObject(data))
+
+	ytbx.RestructureObject(&data)
+	after, _ := neat.ToYAMLString(data)
 
 	return bunt.Sprintf(`Restructure the order of keys in YAML maps
 	

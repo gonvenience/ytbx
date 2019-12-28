@@ -24,52 +24,48 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/homeport/ytbx/pkg/v1/ytbx"
-	yaml "gopkg.in/yaml.v2"
+	. "github.com/homeport/ytbx/pkg/ytbx"
 )
 
 var _ = Describe("Restructure order of map keys", func() {
 	Context("YAML MapSlice key reorderings of the MapSlice itself", func() {
 		It("should restructure Concourse root level keys", func() {
-			input := yml("{ groups: [], jobs: [], resources: [], resource_types: [] }")
-			output := RestructureObject(input).(yaml.MapSlice)
+			example := yml("{ groups: [], jobs: [], resources: [], resource_types: [] }")
+			RestructureObject(example)
 
-			keys, err := ListStringKeys(output)
-			Expect(err).To(BeNil())
+			keys, err := ListStringKeys(example)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(keys).To(BeEquivalentTo([]string{"jobs", "resources", "resource_types", "groups"}))
 		})
 
 		It("should restructure Concourse resource and resource_type keys", func() {
-			input := yml("{ source: {}, name: {}, type: {}, privileged: {} }")
-			output := RestructureObject(input).(yaml.MapSlice)
+			example := yml("{ source: {}, name: {}, type: {}, privileged: {} }")
+			RestructureObject(example)
 
-			keys, err := ListStringKeys(output)
-			Expect(err).To(BeNil())
+			keys, err := ListStringKeys(example)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(keys).To(BeEquivalentTo([]string{"name", "type", "source", "privileged"}))
 		})
 	})
 
 	Context("YAML MapSlice key reorderings of the MapSlice values", func() {
 		It("should restructure Concourse resource keys as part as part of a MapSlice value", func() {
-			input := yml("{ resources: [ { privileged: false, source: { branch: foo, paths: [] }, name: myname, type: mytype } ] }")
-			output := RestructureObject(input).(yaml.MapSlice)
+			example := yml("{ resources: [ { privileged: false, source: { branch: foo, paths: [] }, name: myname, type: mytype } ] }")
+			RestructureObject(example)
 
-			value := output[0].Value.([]interface{})
-			obj := value[0].(yaml.MapSlice)
-
-			keys, err := ListStringKeys(obj)
-			Expect(err).To(BeNil())
+			keys, err := ListStringKeys(example.Content[1].Content[0])
+			Expect(err).ToNot(HaveOccurred())
 			Expect(keys).To(BeEquivalentTo([]string{"name", "type", "source", "privileged"}))
 		})
 	})
 
 	Context("Restructure code tries to rearrange even unknown keys", func() {
 		It("should reorder map keys in a somehow more readable way", func() {
-			input := yml(`{"list":["one","two","three"], "some":{"deep":{"structure":{"where":{"you":{"loose":{"focus":{"one":1,"two":2}}}}}}}, "name":"here", "release":"this"}`)
-			output := RestructureObject(input).(yaml.MapSlice)
+			example := yml(`{"list":["one","two","three"], "some":{"deep":{"structure":{"where":{"you":{"loose":{"focus":{"one":1,"two":2}}}}}}}, "name":"here", "release":"this"}`)
+			RestructureObject(example)
 
-			keys, err := ListStringKeys(output)
-			Expect(err).To(BeNil())
+			keys, err := ListStringKeys(example)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(keys).To(BeEquivalentTo([]string{"name", "release", "list", "some"}))
 		})
 	})

@@ -36,7 +36,7 @@ import (
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/wrap"
 	ordered "github.com/virtuald/go-ordered-json"
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
 // PreserveKeyOrderInJSON specifies whether a special library is used to decode
@@ -55,7 +55,7 @@ type DecoderProxy struct {
 type InputFile struct {
 	Location  string
 	Note      string
-	Documents []interface{}
+	Documents []*yamlv3.Node
 }
 
 // NewDecoderProxy creates a new decoder proxy which either works in ordered
@@ -102,7 +102,7 @@ func HumanReadableLocationInformation(inputFile InputFile) string {
 		}
 
 		buf.WriteString(", ")
-		buf.WriteString(bunt.Sprintf("Aquamarine{*%s*}", str)  )
+		buf.WriteString(bunt.Sprintf("Aquamarine{*%s*}", str))
 	}
 
 	return buf.String()
@@ -166,29 +166,30 @@ func LoadFiles(locationA string, locationB string) (InputFile, InputFile, error)
 // supported document formats, or plain text if nothing else works.
 func LoadFile(location string) (InputFile, error) {
 	var (
-		documents []interface{}
+		documents []*yamlv3.Node
 		data      []byte
 		err       error
 	)
 
 	if data, err = getBytesFromLocation(location); err != nil {
-		return InputFile{},
-			wrap.Error(err, fmt.Sprintf("unable to load data from %s", location))
+		return InputFile{}, wrap.Errorf(err, "unable to load data from %s", location)
 	}
 
 	if documents, err = LoadDocuments(data); err != nil {
-		return InputFile{},
-			wrap.Error(err, fmt.Sprintf("unable to parse data from %s", location))
+		return InputFile{}, wrap.Errorf(err, "unable to parse data from %s", location)
 	}
 
-	return InputFile{Location: location, Documents: documents}, nil
+	return InputFile{
+		Location:  location,
+		Documents: documents,
+	}, nil
 }
 
 // LoadDocuments reads the provided input data slice as a YAML, JSON, or TOML
 // file with potential multiple documents. It only acts as a dispatcher and
 // depending on the input will either use `LoadTOMLDocuments`,
 // `LoadJSONDocuments`, or `LoadYAMLDocuments`.
-func LoadDocuments(input []byte) ([]interface{}, error) {
+func LoadDocuments(input []byte) ([]*yamlv3.Node, error) {
 	// There is no easy check whether the input data is TOML format, this is
 	// why there is currently no other option than simply trying to parse it.
 	if toml, err := LoadTOMLDocuments(input); err == nil {
@@ -207,58 +208,30 @@ func LoadDocuments(input []byte) ([]interface{}, error) {
 	}
 }
 
-// LoadJSONDocuments reads the provided input data slice as a YAML file with
+// LoadJSONDocuments reads the provided input data slice as a JSON file with
 // potential multiple documents. Each document in the JSON stream results in an
-// entry of the result slice. This function performs two decoding passes over
-// the input data slice, the first one to detect the respective types in use.
-// And a second one to properly unmarshal the data in the most suitable Go types
-// available. JSON does not support key orders in maps.
-func LoadJSONDocuments(input []byte) ([]interface{}, error) {
-	var (
-		types   []string
-		values  []interface{}
-		decoder *DecoderProxy
-	)
+// entry of the result slice.
+func LoadJSONDocuments(input []byte) ([]*yamlv3.Node, error) {
+	values := []*yamlv3.Node{}
 
-	// First pass: decode all documents and save the actual types
-	types = make([]string, 0)
-	decoder = NewDecoderProxy(false, bytes.NewReader(input))
+	decoder := NewDecoderProxy(PreserveKeyOrderInJSON, bytes.NewReader(input))
 	for {
 		var value interface{}
-
-		if err := decoder.Decode(&value); err == io.EOF {
+		err := decoder.Decode(&value)
+		if err == io.EOF {
 			break
+		}
 
-		} else if err != nil {
+		if err != nil {
 			return nil, err
 		}
 
-		types = append(types, GetType(value))
-	}
-
-	// Second pass: Based on the types, initialise a proper variable to unmarshal data into
-	values = make([]interface{}, len(types))
-	decoder = NewDecoderProxy(PreserveKeyOrderInJSON, bytes.NewReader(input))
-	for i := 0; i < len(types); i++ {
-		switch types[i] {
-		case typeMap:
-			var value interface{}
-			decoder.Decode(&value)
-			values[i] = mapSlicify(value)
-
-		case typeSimpleList, typeComplexList:
-			var value []interface{}
-			decoder.Decode(&value)
-			values[i] = mapSlicify(value)
-
-		case typeString:
-			var value string
-			decoder.Decode(&value)
-			values[i] = value
-
-		default:
-			return nil, fmt.Errorf("unsupported type %s in load document function", types[i])
+		node, err := asYAMLNode(value)
+		if err != nil {
+			return nil, err
 		}
+
+		values = append(values, node)
 	}
 
 	return values, nil
@@ -266,79 +239,47 @@ func LoadJSONDocuments(input []byte) ([]interface{}, error) {
 
 // LoadYAMLDocuments reads the provided input data slice as a YAML file with
 // potential multiple documents. Each document in the YAML stream results in an
-// entry of the result slice. This function performs two decoding passes over
-// the input data slice, the first one to detect the respective types in use.
-// And a second one to properly unmarshal the data in the most suitable Go types
-// available so that key orders in hashes are preserved.
-func LoadYAMLDocuments(input []byte) ([]interface{}, error) {
-	var (
-		types   []string
-		values  []interface{}
-		decoder *yaml.Decoder
-	)
+// entry of the result slice.
+func LoadYAMLDocuments(input []byte) ([]*yamlv3.Node, error) {
+	documents := []*yamlv3.Node{}
 
-	// First pass: decode all documents and save the actual types
-	types = make([]string, 0)
-	decoder = yaml.NewDecoder(bytes.NewReader(input))
+	decoder := yamlv3.NewDecoder(bytes.NewReader(input))
 	for {
-		var value interface{}
+		var node yamlv3.Node
 
-		if err := decoder.Decode(&value); err == io.EOF {
+		err := decoder.Decode(&node)
+		if err == io.EOF {
 			break
+		}
 
-		} else if err != nil {
+		if err != nil {
 			return nil, err
 		}
 
-		types = append(types, GetType(value))
+		documents = append(documents, &node)
 	}
 
-	// Second pass: Based on the types, initialise a proper variable to unmarshal data into
-	values = make([]interface{}, len(types))
-	decoder = yaml.NewDecoder(bytes.NewReader(input))
-	for i := 0; i < len(types); i++ {
-		switch types[i] {
-		case typeMap:
-			var value yaml.MapSlice
-			decoder.Decode(&value)
-			values[i] = value
-
-		case typeSimpleList:
-			var value []interface{}
-			decoder.Decode(&value)
-			values[i] = value
-
-		case typeComplexList:
-			var value []yaml.MapSlice
-			decoder.Decode(&value)
-			values[i] = value
-
-		case typeString:
-			var value string
-			decoder.Decode(&value)
-			values[i] = value
-
-		default:
-			return nil, fmt.Errorf("unsupported type %s in load document function", types[i])
-		}
-	}
-
-	return values, nil
+	return documents, nil
 }
 
 // LoadTOMLDocuments reads the provided input data slice as a TOML file, which
 // can only have one document. For the sake of having similar sounding
 // functions and the same signatures, the function uses the plural in its name
 // and returns a list of results even though it will only contain one entry.
-// All map entries inside the result document are converted into YAML MapSlice
+// All map entries inside the result document are converted into Go-YAMLv3 Node
 // types to make it compatible with the rest of the package.
-func LoadTOMLDocuments(input []byte) ([]interface{}, error) {
+func LoadTOMLDocuments(input []byte) ([]*yamlv3.Node, error) {
 	var data interface{}
 	if err := toml.Unmarshal(input, &data); err != nil {
 		return nil, err
 	}
 
-	return []interface{}{mapSlicify(data)}, nil
+	node, err := asYAMLNode(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*yamlv3.Node{node}, nil
 }
 
 func getBytesFromLocation(location string) ([]byte, error) {

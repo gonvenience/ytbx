@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
+	yamlv3 "gopkg.in/yaml.v3"
 )
 
 // PathStyle is a custom type for supported path styles
@@ -68,8 +68,11 @@ func (path Path) String() string {
 
 // ToGoPatchStyle returns the path as a GoPatch style string.
 func (path *Path) ToGoPatchStyle() string {
-	sections := []string{""}
+	if len(path.PathElements) == 0 {
+		return "/"
+	}
 
+	sections := []string{""}
 	for _, element := range path.PathElements {
 		switch {
 		case element.Name != "" && element.Key == "":
@@ -218,7 +221,7 @@ func ListPaths(location string, style PathStyle) ([]Path, error) {
 	for idx, document := range inputfile.Documents {
 		root := Path{DocumentIdx: idx}
 
-		traverseTree(root, document, func(path Path, _ interface{}) {
+		traverseTree(root, document, func(path Path, _ *yamlv3.Node) {
 			paths = append(paths, path)
 		})
 	}
@@ -226,28 +229,56 @@ func ListPaths(location string, style PathStyle) ([]Path, error) {
 	return paths, nil
 }
 
-func traverseTree(path Path, obj interface{}, leafFunc func(path Path, value interface{})) {
-	switch tobj := obj.(type) {
-	case []interface{}:
-		if identifier := GetIdentifierFromNamedList(tobj); identifier != "" {
-			for _, entry := range tobj {
-				name, data := splitEntryIntoNameAndData(entry.(yaml.MapSlice), identifier)
-				traverseTree(NewPathWithNamedListElement(path, identifier, name), data, leafFunc)
+func traverseTree(path Path, node *yamlv3.Node, leafFunc func(p Path, n *yamlv3.Node)) {
+	switch node.Kind {
+	case yamlv3.DocumentNode:
+		traverseTree(
+			path,
+			node.Content[0],
+			leafFunc,
+		)
+
+	case yamlv3.SequenceNode:
+		if identifier := GetIdentifierFromNamedList(node); identifier != "" {
+			for _, mappingNode := range node.Content {
+				name, _ := getValueByKey(mappingNode, identifier)
+				tmpPath := NewPathWithNamedListElement(path, identifier, name.Value)
+				for i := 0; i < len(mappingNode.Content); i += 2 {
+					k, v := mappingNode.Content[i], mappingNode.Content[i+1]
+					if k.Value == identifier { // skip the identifier mapping entry
+						continue
+					}
+
+					traverseTree(
+						NewPathWithNamedElement(tmpPath, k.Value),
+						v,
+						leafFunc,
+					)
+				}
 			}
 
 		} else {
-			for idx, entry := range tobj {
-				traverseTree(NewPathWithIndexedListElement(path, idx), entry, leafFunc)
+			for idx, entry := range node.Content {
+				traverseTree(
+					NewPathWithIndexedListElement(path, idx),
+					entry,
+					leafFunc,
+				)
 			}
 		}
 
-	case yaml.MapSlice:
-		for _, mapitem := range tobj {
-			traverseTree(NewPathWithNamedElement(path, mapitem.Key), mapitem.Value, leafFunc)
+	case yamlv3.MappingNode:
+		for i := 0; i < len(node.Content); i += 2 {
+			k, v := node.Content[i], node.Content[i+1]
+			traverseTree(
+				NewPathWithNamedElement(path, k.Value),
+				v,
+				leafFunc,
+			)
 		}
 
 	default:
-		leafFunc(path, obj)
+		leafFunc(path, node)
 	}
 }
 
@@ -304,15 +335,24 @@ func ParseGoPatchStylePathString(path string) (Path, error) {
 
 // ParseDotStylePathString returns a path by parsing a string representation
 // which is assumed to be a Dot-Style path.
-func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
-	elements := make([]PathElement, 0)
+func ParseDotStylePathString(path string, node *yamlv3.Node) (Path, error) {
+	if node.Kind != yamlv3.DocumentNode {
+		return Path{}, fmt.Errorf("node has to be of kind DocumentNode for parsing a document path")
+	}
 
-	pointer := obj
+	elements := make([]PathElement, 0)
+	pointer := node.Content[0]
+
 	for _, section := range strings.Split(path, ".") {
 		switch {
-		case isMapSlice(pointer):
-			mapslice := pointer.(yaml.MapSlice)
-			if value, err := getValueByKey(mapslice, section); err == nil {
+		case pointer == nil:
+			// If the pointer is nil, it means that the previous section of the path
+			// string could not be found in the data structure and that all remaining
+			// sections are assumed to be of type map.
+			elements = append(elements, PathElement{Idx: -1, Name: section})
+
+		case pointer.Kind == yamlv3.MappingNode:
+			if value, err := getValueByKey(pointer, section); err == nil {
 				pointer = value
 				elements = append(elements, PathElement{Idx: -1, Name: section})
 
@@ -321,8 +361,8 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 				elements = append(elements, PathElement{Idx: -1, Name: section})
 			}
 
-		case isList(pointer):
-			list := pointer.([]interface{})
+		case pointer.Kind == yamlv3.SequenceNode:
+			list := pointer.Content
 			if id, err := strconv.Atoi(section); err == nil {
 				if id < 0 || id >= len(list) {
 					return Path{}, &InvalidPathString{
@@ -336,10 +376,10 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 				elements = append(elements, PathElement{Idx: id})
 
 			} else {
-				identifier := GetIdentifierFromNamedList(list)
-				value, ok := getEntryFromNamedList(list, identifier, section)
+				identifier := GetIdentifierFromNamedList(pointer)
+				value, ok := getEntryFromNamedList(pointer, identifier, section)
 				if !ok {
-					names, err := listNamesOfNamedList(list, identifier)
+					names, err := listNamesOfNamedList(pointer, identifier)
 					if err != nil {
 						return Path{}, &InvalidPathString{
 							Style:       DotStyle,
@@ -358,12 +398,6 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 				pointer = value
 				elements = append(elements, PathElement{Idx: -1, Key: identifier, Name: section})
 			}
-
-		case pointer == nil:
-			// If the pointer is nil, it means that the previous section of the path
-			// string could not be found in the data structure and that all remaining
-			// sections are assumed to be of type map.
-			elements = append(elements, PathElement{Idx: -1, Name: section})
 		}
 	}
 
@@ -372,12 +406,12 @@ func ParseDotStylePathString(path string, obj interface{}) (Path, error) {
 
 // ParsePathString returns a path by parsing a string representation
 // of a path, which can be one of the supported types.
-func ParsePathString(pathString string, obj interface{}) (Path, error) {
+func ParsePathString(pathString string, node *yamlv3.Node) (Path, error) {
 	if strings.HasPrefix(pathString, "/") {
 		return ParseGoPatchStylePathString(pathString)
 	}
 
-	return ParseDotStylePathString(pathString, obj)
+	return ParseDotStylePathString(pathString, node)
 }
 
 func (element PathElement) isMapElement() bool {
