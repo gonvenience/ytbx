@@ -88,15 +88,15 @@ func maxDepth(node *yamlv3.Node) (max int) {
 	return max
 }
 
-func countCommonKeys(keys []string, list []string) int {
-	counter, lookup := 0, lookupMap(keys)
+func countCommonKeys(keys []string, list []string) (counter int) {
+	lookup := lookupMap(keys)
 	for _, key := range list {
 		if _, ok := lookup[key]; ok {
 			counter++
 		}
 	}
 
-	return counter
+	return
 }
 
 func commonKeys(setA []string, setB []string) []string {
@@ -147,7 +147,7 @@ func reorderKeyValuePairsInMappingNodeContent(mappingNode *yamlv3.Node, keys []s
 func getSuitableReorderFunction(keys []string) func(*yamlv3.Node) {
 	topCandidateIdx, topCandidateHits := -1, -1
 	for idx, candidate := range knownKeyOrders {
-		if count := countCommonKeys(keys, candidate); count > topCandidateHits {
+		if count := countCommonKeys(keys, candidate); count > 0 && count > topCandidateHits {
 			topCandidateIdx = idx
 			topCandidateHits = count
 		}
