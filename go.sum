@@ -13,6 +13,8 @@ github.com/gonvenience/bunt v1.1.1 h1:isYxOpDqbRMOSRhZtoux1tYvhhQ/AIbVDFrs24l6t0
 github.com/gonvenience/bunt v1.1.1/go.mod h1:lsyhkmNpSAzhVx059BD0fQy5F29rWcS6AHb7UWNlT/s=
 github.com/gonvenience/neat v1.1.2 h1:jWWmBSnIQtwAzHs3rHhbYbWVB90ELPqnn5xy5/Ii80M=
 github.com/gonvenience/neat v1.1.2/go.mod h1:Yb+9Jlr04pbtcRU8EGosVheOEBs//Lw/OXvgDyQfLTQ=
+github.com/gonvenience/neat v1.2.1 h1:c7UF/t2TWxzleRlMNIuRlXgkkamFUrNUkL/nRpN8QO8=
+github.com/gonvenience/neat v1.2.1/go.mod h1:Yb+9Jlr04pbtcRU8EGosVheOEBs//Lw/OXvgDyQfLTQ=
 github.com/gonvenience/term v1.0.0 h1:joCB/j0Ngmdakd3muuLgAGPMf7DNKdoe708c1I6RiBs=
 github.com/gonvenience/term v1.0.0/go.mod h1:wohD4Iqso9Eol7qc2VnNhSFFhZxok5PvO7pZhdrAn4E=
 github.com/gonvenience/wrap v1.1.0 h1:d8gEZrXS/zg4BC1q0U4nHpPIh5k6muKpQ1+rQFBwpYc=
