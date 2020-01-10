@@ -31,7 +31,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/gorilla/mux"
-	. "github.com/homeport/ytbx/pkg/ytbx"
+	. "github.com/gonvenience/ytbx/pkg/ytbx"
 )
 
 var _ = Describe("Input test cases", func() {

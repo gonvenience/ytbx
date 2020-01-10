@@ -20,7 +20,7 @@
 
 package main
 
-import "github.com/homeport/ytbx/internal/cmd"
+import "github.com/gonvenience/ytbx/internal/cmd"
 
 func main() {
 	cmd.Execute()

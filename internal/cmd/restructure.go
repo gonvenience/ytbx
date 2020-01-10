@@ -29,7 +29,7 @@ import (
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
-	"github.com/homeport/ytbx/pkg/ytbx"
+	"github.com/gonvenience/ytbx/pkg/ytbx"
 	"github.com/spf13/cobra"
 	yamlv3 "gopkg.in/yaml.v3"
 )

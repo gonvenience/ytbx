@@ -47,15 +47,15 @@ test: $(sources)
 
 binaries/ytbx-linux-amd64: $(sources)
 	@GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-	  -tags netgo \
-		-ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' \
+		-tags netgo \
+		-ldflags='-s -w -extldflags "-static" -X github.com/gonvenience/ytbx/internal/cmd.version=$(version)' \
 		-o binaries/ytbx-linux-amd64 \
 		cmd/ytbx/main.go
 
 binaries/ytbx-darwin-amd64: $(sources)
 	@GO111MODULE=on CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build \
-	  -tags netgo \
-		-ldflags='-s -w -extldflags "-static" -X github.com/homeport/ytbx/internal/cmd.version=$(version)' \
+		-tags netgo \
+		-ldflags='-s -w -extldflags "-static" -X github.com/gonvenience/ytbx/internal/cmd.version=$(version)' \
 		-o binaries/ytbx-darwin-amd64 \
 		cmd/ytbx/main.go
 

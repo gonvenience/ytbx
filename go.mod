@@ -1,4 +1,4 @@
-module github.com/homeport/ytbx
+module github.com/gonvenience/ytbx
 
 go 1.12
 
