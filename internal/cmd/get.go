@@ -25,7 +25,7 @@ import (
 
 	"github.com/gonvenience/neat"
 	"github.com/gonvenience/wrap"
-	"github.com/gonvenience/ytbx/pkg/ytbx"
+	"github.com/gonvenience/ytbx"
 	"github.com/spf13/cobra"
 )
 

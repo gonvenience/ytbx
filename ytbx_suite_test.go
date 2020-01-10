@@ -33,7 +33,7 @@ import (
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
-	"github.com/gonvenience/ytbx/pkg/ytbx"
+	"github.com/gonvenience/ytbx"
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
@@ -88,7 +88,7 @@ var _ = AfterSuite(func() {
 
 func assets(pathElement ...string) string {
 	targetPath := filepath.Join(append(
-		[]string{"..", "..", "assets"},
+		[]string{"assets"},
 		pathElement...,
 	)...)
 

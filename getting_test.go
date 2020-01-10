@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/gonvenience/ytbx/pkg/ytbx"
+	"github.com/gonvenience/ytbx"
 )
 
 var _ = Describe("getting stuff test cases", func() {
