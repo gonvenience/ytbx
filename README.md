@@ -7,6 +7,4 @@
 [![GoDoc](https://godoc.org/github.com/gonvenience/ytbx/pkg?status.svg)](https://godoc.org/github.com/gonvenience/ytbx/pkg)
 [![Release](https://img.shields.io/github/release/gonvenience/ytbx.svg)](https://github.com/gonvenience/ytbx/releases/latest)
 
-YAML tool box
-
-> (more content is coming ...)
+Golang package with convenience functions to load and process YAML files
