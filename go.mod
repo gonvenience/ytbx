@@ -7,7 +7,7 @@ require (
 	github.com/gonvenience/bunt v1.1.1
 	github.com/gonvenience/neat v1.2.2
 	github.com/gonvenience/wrap v1.1.0
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.4
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.9.0
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
