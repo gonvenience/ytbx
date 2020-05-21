@@ -8,8 +8,8 @@ require (
 	github.com/gonvenience/neat v1.3.0
 	github.com/gonvenience/wrap v1.1.0
 	github.com/gorilla/mux v1.7.4
-	github.com/onsi/ginkgo v1.12.1
-	github.com/onsi/gomega v1.10.0
+	github.com/onsi/ginkgo v1.12.2
+	github.com/onsi/gomega v1.10.1
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
 	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
 )
