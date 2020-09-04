@@ -229,6 +229,30 @@ func ListPaths(location string, style PathStyle) ([]Path, error) {
 	return paths, nil
 }
 
+// IsPathInTree returns whether the provided path is in the given YAML structure
+func IsPathInTree(tree *yamlv3.Node, pathString string) (bool, error) {
+	searchPath, err := ParsePathString(pathString, tree)
+	if err != nil {
+		return false, err
+	}
+
+	resultChan := make(chan bool)
+
+	go func() {
+		for _, node := range tree.Content {
+			traverseTree(Path{}, node, func(path Path, _ *yamlv3.Node) {
+				if path.ToGoPatchStyle() == searchPath.ToGoPatchStyle() {
+					resultChan <- true
+				}
+			})
+
+			resultChan <- false
+		}
+	}()
+
+	return <-resultChan, nil
+}
+
 func traverseTree(path Path, node *yamlv3.Node, leafFunc func(p Path, n *yamlv3.Node)) {
 	switch node.Kind {
 	case yamlv3.DocumentNode:

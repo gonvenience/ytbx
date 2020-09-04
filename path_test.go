@@ -204,4 +204,19 @@ var _ = Describe("path tests", func() {
 			Expect(list).To(BeEquivalentTo(listOfPathsWithSameValue))
 		})
 	})
+
+	Context("checking for path in YAML", func() {
+		It("should check whether the provided path is in the YAML", func() {
+			example := yml(assets("examples", "types.yml"))
+
+			Expect(IsPathInTree(example, "/yaml/map/before")).To(BeTrue())
+			Expect(IsPathInTree(example, "/yaml/map/nope")).To(BeFalse())
+
+			Expect(IsPathInTree(example, "/yaml/simple-list/0")).To(BeTrue())
+			Expect(IsPathInTree(example, "/yaml/simple-list/5")).To(BeFalse())
+
+			Expect(IsPathInTree(example, "/yaml/named-entry-list-using-name/name=A/foo")).To(BeTrue())
+			Expect(IsPathInTree(example, "/yaml/named-entry-list-using-name/name=nope/foo")).To(BeFalse())
+		})
+	})
 })

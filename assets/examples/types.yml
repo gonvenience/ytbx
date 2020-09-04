@@ -27,21 +27,36 @@ yaml:
 
   named-entry-list-using-name:
   - name: A
+    foo: bar
   - name: B
+    foo: bar
   - name: C
+    foo: bar
   - name: X
+    foo: bar
   - name: Z
+    foo: bar
 
   named-entry-list-using-key:
   - key: A
+    foo: bar
   - key: B
+    foo: bar
   - key: C
+    foo: bar
   - key: X
+    foo: bar
   - key: Z
+    foo: bar
 
   named-entry-list-using-id:
   - id: A
+    foo: bar
   - id: B
+    foo: bar
   - id: C
+    foo: bar
   - id: X
+    foo: bar
   - id: Z
+    foo: bar
