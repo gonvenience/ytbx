@@ -34,16 +34,13 @@ func Grab(node *yamlv3.Node, pathString string) (*yamlv3.Node, error) {
 		return nil, err
 	}
 
-	if node.Kind == yamlv3.DocumentNode {
-		if len(node.Content) != 1 {
-			panic("unsure of implementation detail document node with multiple nodes")
-		}
+	switch node.Kind {
+	case yamlv3.DocumentNode:
+		return grabByPath(node.Content[0], path)
 
-		entry := node.Content[0]
-		return grabByPath(entry, path)
+	default:
+		return grabByPath(node, path)
 	}
-
-	return grabByPath(node, path)
 }
 
 func grabByPath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
