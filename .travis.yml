@@ -1,7 +1,7 @@
 ---
 language: go
 go:
-- 1.12.x
+- 1.15.x
 
 install:
 - curl --silent --location https://goo.gl/g1CpPX | bash -s v1.3.0
