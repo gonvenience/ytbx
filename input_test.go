@@ -30,8 +30,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/gorilla/mux"
 	. "github.com/gonvenience/ytbx"
+	. "github.com/gorilla/mux"
 )
 
 var _ = Describe("Input test cases", func() {
