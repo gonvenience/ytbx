@@ -150,7 +150,7 @@ var _ = Describe("path tests", func() {
 
 	Context("compare paths between two files", func() {
 		It("should find only duplicate paths", func() {
-			list, err := ComparePaths(assets("testbed", "sample_a.yml"), assets("testbed", "sample_b.yml"), GoPatchStyle, false)
+			list, err := ComparePaths(assets("testbed", "sample_a.yml"), assets("testbed", "sample_b.yml"), false)
 			Expect(err).ToNot(HaveOccurred())
 
 			listOfPaths := []Path{
@@ -181,7 +181,7 @@ var _ = Describe("path tests", func() {
 		})
 
 		It("should find only paths with the same value", func() {
-			list, err := ComparePaths(assets("testbed", "sample_a.yml"), assets("testbed", "sample_b.yml"), GoPatchStyle, true)
+			list, err := ComparePaths(assets("testbed", "sample_a.yml"), assets("testbed", "sample_b.yml"), true)
 			Expect(err).ToNot(HaveOccurred())
 
 			listOfPathsWithSameValue := []Path{

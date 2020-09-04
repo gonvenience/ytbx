@@ -179,14 +179,14 @@ func ComparePathsByValue(fromLocation string, toLocation string, duplicatePaths 
 }
 
 // ComparePaths returns all duplicate Path structures between two documents.
-func ComparePaths(fromLocation string, toLocation string, style PathStyle, compareByValue bool) ([]Path, error) {
+func ComparePaths(fromLocation string, toLocation string, compareByValue bool) ([]Path, error) {
 	var duplicatePaths []Path
 
-	pathsFromLocation, err := ListPaths(fromLocation, style)
+	pathsFromLocation, err := ListPaths(fromLocation)
 	if err != nil {
 		return nil, err
 	}
-	pathsToLocation, err := ListPaths(toLocation, style)
+	pathsToLocation, err := ListPaths(toLocation)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func ComparePaths(fromLocation string, toLocation string, style PathStyle, compa
 
 // ListPaths returns all paths in the documents using the provided choice of
 // path style.
-func ListPaths(location string, style PathStyle) ([]Path, error) {
+func ListPaths(location string) ([]Path, error) {
 	inputfile, err := LoadFile(location)
 	if err != nil {
 		return nil, err
