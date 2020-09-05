@@ -221,7 +221,7 @@ func ListPaths(location string) ([]Path, error) {
 	for idx, document := range inputfile.Documents {
 		root := Path{DocumentIdx: idx}
 
-		traverseTree(root, document, func(path Path, _ *yamlv3.Node) {
+		traverseTree(root, nil, document, func(path Path, _ *yamlv3.Node, _ *yamlv3.Node) {
 			paths = append(paths, path)
 		})
 	}
@@ -240,7 +240,7 @@ func IsPathInTree(tree *yamlv3.Node, pathString string) (bool, error) {
 
 	go func() {
 		for _, node := range tree.Content {
-			traverseTree(Path{}, node, func(path Path, _ *yamlv3.Node) {
+			traverseTree(Path{}, nil, node, func(path Path, _ *yamlv3.Node, _ *yamlv3.Node) {
 				if path.ToGoPatchStyle() == searchPath.ToGoPatchStyle() {
 					resultChan <- true
 				}
@@ -253,11 +253,12 @@ func IsPathInTree(tree *yamlv3.Node, pathString string) (bool, error) {
 	return <-resultChan, nil
 }
 
-func traverseTree(path Path, node *yamlv3.Node, leafFunc func(p Path, n *yamlv3.Node)) {
+func traverseTree(path Path, parent *yamlv3.Node, node *yamlv3.Node, leafFunc func(path Path, parent *yamlv3.Node, leaf *yamlv3.Node)) {
 	switch node.Kind {
 	case yamlv3.DocumentNode:
 		traverseTree(
 			path,
+			node,
 			node.Content[0],
 			leafFunc,
 		)
@@ -275,6 +276,7 @@ func traverseTree(path Path, node *yamlv3.Node, leafFunc func(p Path, n *yamlv3.
 
 					traverseTree(
 						NewPathWithNamedElement(tmpPath, k.Value),
+						node,
 						v,
 						leafFunc,
 					)
@@ -285,6 +287,7 @@ func traverseTree(path Path, node *yamlv3.Node, leafFunc func(p Path, n *yamlv3.
 			for idx, entry := range node.Content {
 				traverseTree(
 					NewPathWithIndexedListElement(path, idx),
+					node,
 					entry,
 					leafFunc,
 				)
@@ -296,13 +299,14 @@ func traverseTree(path Path, node *yamlv3.Node, leafFunc func(p Path, n *yamlv3.
 			k, v := node.Content[i], node.Content[i+1]
 			traverseTree(
 				NewPathWithNamedElement(path, k.Value),
+				node,
 				v,
 				leafFunc,
 			)
 		}
 
 	default:
-		leafFunc(path, node)
+		leafFunc(path, parent, node)
 	}
 }
 
