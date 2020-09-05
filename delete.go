@@ -58,12 +58,11 @@ func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 
 	switch parent.Kind {
 	case yamlv3.MappingNode:
-		var keyName string = lastPathElement.Name
-		var deleteIdx int = -1
+		var deleteIdx int
 		for i := 0; i < len(parent.Content); i += 2 {
 			k, v := parent.Content[i], parent.Content[i+1]
 
-			if k.Value == keyName {
+			if k.Value == lastPathElement.Name {
 				deleteIdx = i
 				deletedNode = v
 				break
@@ -80,7 +79,7 @@ func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 		return deletedNode, nil
 
 	case yamlv3.SequenceNode:
-		var deleteIdx int = -1
+		var deleteIdx int
 		if lastPathElement.isSimpleListElement() {
 			deleteIdx = lastPathElement.Idx
 		} else {
