@@ -182,7 +182,7 @@ func (matcher *nodeMatcher) Match(actual interface{}) (success bool, err error) 
 }
 
 func (matcher *nodeMatcher) FailureMessage(actual interface{}) string {
-	return fmt.Sprintf("Expected\n\t%#v\nto be same as\n\t%#v",
+	return fmt.Sprintf("Expected\n\t%#v\n"+"to be same as\n\t%#v",
 		actual,
 		matcher.expected)
 }
