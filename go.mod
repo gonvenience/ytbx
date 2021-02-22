@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/gonvenience/bunt v1.3.0
+	github.com/gonvenience/bunt v1.3.1
 	github.com/gonvenience/neat v1.3.5
 	github.com/gonvenience/wrap v1.1.0
 	github.com/gorilla/mux v1.8.0
