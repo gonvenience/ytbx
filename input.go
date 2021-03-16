@@ -113,7 +113,7 @@ func HumanReadableLocation(location string) string {
 	var buf bytes.Buffer
 
 	if IsStdin(location) {
-		buf.WriteString(bunt.Style("<STDIN>", bunt.Italic()))
+		bunt.Fprint(&buf, "_*stdin*_")
 
 	} else if _, err := os.Stat(location); err == nil {
 		if abs, err := filepath.Abs(location); err == nil {
@@ -172,11 +172,11 @@ func LoadFile(location string) (InputFile, error) {
 	)
 
 	if data, err = getBytesFromLocation(location); err != nil {
-		return InputFile{}, wrap.Errorf(err, "unable to load data from %s", location)
+		return InputFile{}, wrap.Errorf(err, "unable to load data from %s", HumanReadableLocation(location))
 	}
 
 	if documents, err = LoadDocuments(data); err != nil {
-		return InputFile{}, wrap.Errorf(err, "unable to parse data from %s", location)
+		return InputFile{}, wrap.Errorf(err, "unable to parse data from %s", HumanReadableLocation(location))
 	}
 
 	return InputFile{
