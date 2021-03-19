@@ -78,13 +78,11 @@ func TestYtbx(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	bunt.ColorSetting = bunt.OFF
-	bunt.TrueColorSetting = bunt.OFF
+	SetColorSettings(OFF, OFF)
 })
 
 var _ = AfterSuite(func() {
-	bunt.ColorSetting = bunt.AUTO
-	bunt.TrueColorSetting = bunt.AUTO
+	SetColorSettings(AUTO, AUTO)
 })
 
 func assets(pathElement ...string) string {
