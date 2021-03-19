@@ -25,6 +25,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/gonvenience/ytbx"
+
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
@@ -156,24 +157,24 @@ var _ = Describe("path tests", func() {
 			listOfPaths := []Path{
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-						{Idx: -1, Key: "", Name: "yaml"},
-						{Idx: -1, Key: "", Name: "structure"},
-						{Idx: -1, Key: "", Name: "somekey"},
-					},
+					{Idx: -1, Key: "", Name: "yaml"},
+					{Idx: -1, Key: "", Name: "structure"},
+					{Idx: -1, Key: "", Name: "somekey"},
+				},
 				},
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-						{Idx: -1, Key: "", Name: "yaml"},
-						{Idx: -1, Key: "", Name: "structure"},
-						{Idx: -1, Key: "", Name: "dot"},
-					},
+					{Idx: -1, Key: "", Name: "yaml"},
+					{Idx: -1, Key: "", Name: "structure"},
+					{Idx: -1, Key: "", Name: "dot"},
+				},
 				},
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-						{Idx: -1, Key: "", Name: "list"},
-						{Idx: -1, Key: "name", Name: "sametwo"},
-						{Idx: -1, Key: "", Name: "somekey"},
-					},
+					{Idx: -1, Key: "", Name: "list"},
+					{Idx: -1, Key: "name", Name: "sametwo"},
+					{Idx: -1, Key: "", Name: "somekey"},
+				},
 				},
 			}
 
@@ -187,17 +188,17 @@ var _ = Describe("path tests", func() {
 			listOfPathsWithSameValue := []Path{
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-						{Idx: -1, Key: "", Name: "yaml"},
-						{Idx: -1, Key: "", Name: "structure"},
-						{Idx: -1, Key: "", Name: "dot"},
-					},
+					{Idx: -1, Key: "", Name: "yaml"},
+					{Idx: -1, Key: "", Name: "structure"},
+					{Idx: -1, Key: "", Name: "dot"},
+				},
 				},
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-						{Idx: -1, Key: "", Name: "list"},
-						{Idx: -1, Key: "name", Name: "sametwo"},
-						{Idx: -1, Key: "", Name: "somekey"},
-					},
+					{Idx: -1, Key: "", Name: "list"},
+					{Idx: -1, Key: "name", Name: "sametwo"},
+					{Idx: -1, Key: "", Name: "somekey"},
+				},
 				},
 			}
 

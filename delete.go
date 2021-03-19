@@ -52,7 +52,7 @@ func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 	}
 
 	var (
-		lastPathElement PathElement  = path.PathElements[len(path.PathElements)-1]
+		lastPathElement              = path.PathElements[len(path.PathElements)-1]
 		deletedNode     *yamlv3.Node = nil
 	)
 

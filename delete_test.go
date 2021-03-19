@@ -24,8 +24,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/gonvenience/ytbx"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gonvenience/ytbx"
 )
 
 var _ = Describe("Delete from YAML", func() {

@@ -39,7 +39,7 @@ const (
 	GoPatchStyle
 )
 
-// Path points to a section in a data struture by using names to identify the
+// Path points to a section in a data structure by using names to identify the
 // location.
 // Example:
 //   ---
@@ -318,7 +318,7 @@ func ParseGoPatchStylePathString(path string) (Path, error) {
 		return Path{DocumentIdx: 0, PathElements: nil}, nil
 	}
 
-	// Poor mans solution to deal with escaped slashes, replace them with a "safe"
+	// Hacky solution to deal with escaped slashes, replace them with a "safe"
 	// replacement string that is later resolved into a simple slash
 	path = strings.Replace(path, `\/`, `%2F`, -1)
 

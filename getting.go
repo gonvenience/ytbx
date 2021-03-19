@@ -68,7 +68,7 @@ func grabByPath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 			pointer = entry
 
 		// Complex List, where each list entry is a Key/Value map and the entry is
-		// identified by name using an indentifier (e.g. name, key, or id)
+		// identified by name using an identifier (e.g. name, key, or id)
 		case element.isComplexListElement():
 			if pointer.Kind != yamlv3.SequenceNode {
 				return nil,

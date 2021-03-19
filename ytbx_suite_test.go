@@ -27,14 +27,15 @@ import (
 	"strconv"
 	"testing"
 
+	. "github.com/gonvenience/bunt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/types"
 
-	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
-	"github.com/gonvenience/ytbx"
 	yamlv3 "gopkg.in/yaml.v3"
+
+	"github.com/gonvenience/ytbx"
 )
 
 var exampleTOML = `
@@ -159,6 +160,7 @@ func grab(node *yamlv3.Node, path string) interface{} {
 func grabError(node *yamlv3.Node, path string) string {
 	value, err := ytbx.Grab(node, path)
 	Expect(value).To(BeNil())
+	Expect(err).ToNot(BeNil())
 	return err.Error()
 }
 

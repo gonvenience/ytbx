@@ -79,7 +79,10 @@ func (d *DecoderProxy) Decode(v interface{}) error {
 	return d.standard.Decode(v)
 }
 
-// HumanReadableLocationInformation create a nicely decorated information about the provided input location. It will output the absolut path of the file (rather than the possibly relative location), or it will show the URL in the usual look-and-feel of URIs.
+// HumanReadableLocationInformation create a nicely decorated information about
+// the provided input location. It will output the absolute path of the file
+// rather than the possibly relative location, or it will show the URL in the
+// usual look-and-feel of URIs.
 func HumanReadableLocationInformation(inputFile InputFile) string {
 	var buf bytes.Buffer
 
@@ -283,7 +286,7 @@ func LoadTOMLDocuments(input []byte) ([]*yamlv3.Node, error) {
 }
 
 func getBytesFromLocation(location string) ([]byte, error) {
-	// Handle special location "-" which referes to STDIN stream
+	// Handle special location "-" which refers to STDIN stream
 	if IsStdin(location) {
 		return ioutil.ReadAll(os.Stdin)
 	}

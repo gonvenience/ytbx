@@ -28,7 +28,7 @@ import (
 )
 
 var _ = Describe("Restructure order of map keys", func() {
-	Context("YAML MapSlice key reorderings of the MapSlice itself", func() {
+	Context("YAML MapSlice key reordering of the MapSlice itself", func() {
 		It("should restructure Concourse root level keys", func() {
 			example := yml("{ groups: [], jobs: [], resources: [], resource_types: [] }")
 			RestructureObject(example)
@@ -48,7 +48,7 @@ var _ = Describe("Restructure order of map keys", func() {
 		})
 	})
 
-	Context("YAML MapSlice key reorderings of the MapSlice values", func() {
+	Context("YAML MapSlice key reordering of the MapSlice values", func() {
 		It("should restructure Concourse resource keys as part as part of a MapSlice value", func() {
 			example := yml("{ resources: [ { privileged: false, source: { branch: foo, paths: [] }, name: myname, type: mytype } ] }")
 			RestructureObject(example)
