@@ -23,11 +23,14 @@ package ytbx
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
 	yamlv3 "gopkg.in/yaml.v3"
 )
+
+var dotRegEx = regexp.MustCompile(`^((\d+):)?(.*)$`)
 
 // PathStyle is a custom type for supported path styles
 type PathStyle int
@@ -444,6 +447,46 @@ func ParseDotStylePathString(path string, node *yamlv3.Node) (Path, error) {
 	}
 
 	return Path{DocumentIdx: 0, PathElements: elements}, nil
+}
+
+// ParseDotStylePathStringUnsafe returns a path by parsing a string
+// representation, which is assumed to be a Dot-Style path, but *without*
+// checking it against a YAML Node
+func ParseDotStylePathStringUnsafe(path string) (Path, error) {
+	matches := dotRegEx.FindStringSubmatch(path)
+	if matches == nil {
+		return Path{}, NewInvalidPathError(GoPatchStyle, path,
+			"failed to parse path string, because path does not match expected format",
+		)
+	}
+
+	var documentIdx int
+	if len(matches[2]) > 0 {
+		var err error
+		documentIdx, err = strconv.Atoi(matches[2])
+		if err != nil {
+			return Path{}, NewInvalidPathError(GoPatchStyle, path,
+				"failed to parse path string, cannot parse document index: %s", matches[2],
+			)
+		}
+	}
+
+	// Reset path variable to only contain the raw path string
+	path = matches[3]
+
+	var elements []PathElement
+	for _, section := range strings.Split(path, ".") {
+		if idx, err := strconv.Atoi(section); err == nil {
+			elements = append(elements, PathElement{Idx: idx})
+
+		} else {
+			// This is the unsafe part here, since there is no YAML node to
+			// check against, it can only be assumed it is a mapping
+			elements = append(elements, PathElement{Idx: -1, Name: section})
+		}
+	}
+
+	return Path{DocumentIdx: documentIdx, PathElements: elements}, nil
 }
 
 // ParsePathString returns a path by parsing a string representation

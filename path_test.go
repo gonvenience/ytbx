@@ -87,6 +87,20 @@ var _ = Describe("path tests", func() {
 				{Idx: -1, Key: "", Name: "newkey"},
 			}}))
 		})
+
+		It("should parse unsafe paths too", func() {
+			Expect(ParseDotStylePathStringUnsafe("list.one.newkey")).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "", Name: "one"},
+				{Idx: -1, Key: "", Name: "newkey"},
+			}}))
+
+			Expect(ParseDotStylePathStringUnsafe("list.0.newkey")).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: 0, Key: "", Name: ""},
+				{Idx: -1, Key: "", Name: "newkey"},
+			}}))
+		})
 	})
 
 	Context("parse go-patch style path strings into paths", func() {
@@ -157,24 +171,24 @@ var _ = Describe("path tests", func() {
 			listOfPaths := []Path{
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-					{Idx: -1, Key: "", Name: "yaml"},
-					{Idx: -1, Key: "", Name: "structure"},
-					{Idx: -1, Key: "", Name: "somekey"},
-				},
-				},
-				{
-					DocumentIdx: 0, PathElements: []PathElement{
-					{Idx: -1, Key: "", Name: "yaml"},
-					{Idx: -1, Key: "", Name: "structure"},
-					{Idx: -1, Key: "", Name: "dot"},
-				},
+						{Idx: -1, Key: "", Name: "yaml"},
+						{Idx: -1, Key: "", Name: "structure"},
+						{Idx: -1, Key: "", Name: "somekey"},
+					},
 				},
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-					{Idx: -1, Key: "", Name: "list"},
-					{Idx: -1, Key: "name", Name: "sametwo"},
-					{Idx: -1, Key: "", Name: "somekey"},
+						{Idx: -1, Key: "", Name: "yaml"},
+						{Idx: -1, Key: "", Name: "structure"},
+						{Idx: -1, Key: "", Name: "dot"},
+					},
 				},
+				{
+					DocumentIdx: 0, PathElements: []PathElement{
+						{Idx: -1, Key: "", Name: "list"},
+						{Idx: -1, Key: "name", Name: "sametwo"},
+						{Idx: -1, Key: "", Name: "somekey"},
+					},
 				},
 			}
 
@@ -188,17 +202,17 @@ var _ = Describe("path tests", func() {
 			listOfPathsWithSameValue := []Path{
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-					{Idx: -1, Key: "", Name: "yaml"},
-					{Idx: -1, Key: "", Name: "structure"},
-					{Idx: -1, Key: "", Name: "dot"},
-				},
+						{Idx: -1, Key: "", Name: "yaml"},
+						{Idx: -1, Key: "", Name: "structure"},
+						{Idx: -1, Key: "", Name: "dot"},
+					},
 				},
 				{
 					DocumentIdx: 0, PathElements: []PathElement{
-					{Idx: -1, Key: "", Name: "list"},
-					{Idx: -1, Key: "name", Name: "sametwo"},
-					{Idx: -1, Key: "", Name: "somekey"},
-				},
+						{Idx: -1, Key: "", Name: "list"},
+						{Idx: -1, Key: "name", Name: "sametwo"},
+						{Idx: -1, Key: "", Name: "somekey"},
+					},
 				},
 			}
 
