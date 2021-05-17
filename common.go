@@ -21,7 +21,9 @@
 package ytbx
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 
 	yamlv3 "gopkg.in/yaml.v3"
 )
@@ -31,8 +33,14 @@ const (
 	typeMap         = "map"
 	typeSimpleList  = "list"
 	typeComplexList = "complex-list"
-	typeString      = "string"
 )
+
+// IsStdin checks whether the provided input location refers to the dash
+// character which usually serves as the replacement to point to STDIN rather
+// than a file.
+func IsStdin(location string) bool {
+	return strings.TrimSpace(location) == "-"
+}
 
 // GetType returns the type of the input value with a YAML specific view
 func GetType(value interface{}) string {
@@ -68,4 +76,73 @@ func hasMappingNodes(sequenceNode *yamlv3.Node) bool {
 	}
 
 	return counter == len(sequenceNode.Content)
+}
+
+func typeCheck(path Path, node *yamlv3.Node, kind yamlv3.Kind) error {
+	if node.Kind != kind {
+		return fmt.Errorf("unexpected element in tree, expected %v but found type %v at %v",
+			kind,
+			node.Kind,
+			path,
+		)
+	}
+
+	return nil
+}
+
+func traverseTree(path Path, parent *yamlv3.Node, node *yamlv3.Node, leafFunc func(path Path, parent *yamlv3.Node, leaf *yamlv3.Node)) {
+	switch node.Kind {
+	case yamlv3.DocumentNode:
+		traverseTree(
+			path,
+			node,
+			node.Content[0],
+			leafFunc,
+		)
+
+	case yamlv3.SequenceNode:
+		if identifier := GetIdentifierFromNamedList(node); identifier != "" {
+			for _, mappingNode := range node.Content {
+				name, _ := getValueByKey(mappingNode, identifier)
+				tmpPath := NewPathWithNamedEntryListSection(path, identifier, name.Value)
+				for i := 0; i < len(mappingNode.Content); i += 2 {
+					k, v := mappingNode.Content[i], mappingNode.Content[i+1]
+					if k.Value == identifier { // skip the identifier mapping entry
+						continue
+					}
+
+					traverseTree(
+						NewPathWithNamedEntrySection(tmpPath, k.Value),
+						node,
+						v,
+						leafFunc,
+					)
+				}
+			}
+
+		} else {
+			for idx, entry := range node.Content {
+				traverseTree(
+					NewPathWithIndexedEntrySection(path, idx),
+					node,
+					entry,
+					leafFunc,
+				)
+			}
+		}
+
+	case yamlv3.MappingNode:
+		for i := 0; i < len(node.Content); i += 2 {
+			k, v := node.Content[i], node.Content[i+1]
+			traverseTree(
+				NewPathWithNamedEntrySection(path, k.Value),
+				node,
+				v,
+				leafFunc,
+			)
+		}
+
+	default:
+		leafFunc(path, parent, node)
+	}
 }

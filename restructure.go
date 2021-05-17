@@ -74,13 +74,12 @@ func lookupMapOfContentList(list []*yamlv3.Node) map[string]int {
 }
 
 func maxDepth(node *yamlv3.Node) (max int) {
-	rootPath, _ := ParseGoPatchStylePathString("/")
 	traverseTree(
-		rootPath,
+		Path{},
 		nil,
 		node,
 		func(p Path, _ *yamlv3.Node, _ *yamlv3.Node) {
-			if depth := len(p.PathElements); depth > max {
+			if depth := len(p.sections); depth > max {
 				max = depth
 			}
 		},
@@ -101,7 +100,9 @@ func countCommonKeys(keys []string, list []string) (counter int) {
 }
 
 func commonKeys(setA []string, setB []string) []string {
-	result, lookup := []string{}, lookupMap(setB)
+	lookup := lookupMap(setB)
+
+	var result []string
 	for _, entry := range setA {
 		if _, ok := lookup[entry]; ok {
 			result = append(result, entry)
@@ -112,8 +113,10 @@ func commonKeys(setA []string, setB []string) []string {
 }
 
 func reorderKeyValuePairsInMappingNodeContent(mappingNode *yamlv3.Node, keys []string) {
+	keysLookup := lookupMap(keys)
+
 	// Create list with all keys, that are not part of the provided list of keys
-	remainingKeys, keysLookup := []string{}, lookupMap(keys)
+	var remainingKeys []string
 	for i := 0; i < len(mappingNode.Content); i += 2 {
 		key := mappingNode.Content[i].Value
 		if _, ok := keysLookup[key]; !ok {
@@ -131,9 +134,11 @@ func reorderKeyValuePairsInMappingNodeContent(mappingNode *yamlv3.Node, keys []s
 		})
 	}
 
+	contentLookup := lookupMapOfContentList(mappingNode.Content)
+
 	// Rebuild a new YAML Node list (content) key by key by using first the keys
 	// from the reorder list and then all remaining keys
-	content, contentLookup := []*yamlv3.Node{}, lookupMapOfContentList(mappingNode.Content)
+	var content []*yamlv3.Node
 	for _, key := range append(keys, remainingKeys...) {
 		idx := contentLookup[key]
 		content = append(content,

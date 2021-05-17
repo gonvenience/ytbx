@@ -84,9 +84,9 @@ var _ = Describe("Input test cases", func() {
 		})
 
 		It("should load a YAML via a HTTP request", func() {
-			inputfile, err := LoadFile(server.URL + "/v1/assets/examples/types.yml")
+			file, err := LoadFile(server.URL + "/v1/assets/examples/types.yml")
 			Expect(err).To(BeNil())
-			Expect(inputfile).ToNot(BeNil())
+			Expect(file).ToNot(BeNil())
 		})
 
 		It("should fail if the HTTP request fails", func() {

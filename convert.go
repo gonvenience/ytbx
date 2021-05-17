@@ -21,19 +21,106 @@
 package ytbx
 
 import (
+	"fmt"
+	"strconv"
+	"time"
+
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
-func asYAMLNode(obj interface{}) (*yamlv3.Node, error) {
-	data, err := yamlv3.Marshal(obj)
+func asNode(obj interface{}) (*yamlv3.Node, error) {
+	switch obj := obj.(type) {
+	case string:
+		return &yamlv3.Node{
+			Kind:  yamlv3.ScalarNode,
+			Tag:   "!!str",
+			Value: obj,
+		}, nil
+
+	default:
+		tmp, err := yamlv3.Marshal(obj)
+		if err != nil {
+			return nil, err
+		}
+
+		var node yamlv3.Node
+		if err := yamlv3.Unmarshal(tmp, &node); err != nil {
+			return nil, err
+		}
+
+		return &node, nil
+	}
+}
+
+func asNodeP(obj interface{}) *yamlv3.Node {
+	val, err := asNode(obj)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	var node yamlv3.Node
-	if err := yamlv3.Unmarshal(data, &node); err != nil {
-		return nil, err
+	return val
+}
+
+func asType(node *yamlv3.Node) (interface{}, error) {
+	switch node.Kind {
+	case yamlv3.DocumentNode:
+		return asType(node.Content[0])
+
+	case yamlv3.MappingNode:
+		var tmp = map[interface{}]interface{}{}
+		for i := 0; i < len(node.Content); i += 2 {
+			key, err := asType(node.Content[i])
+			if err != nil {
+				return nil, err
+			}
+
+			val, err := asType(node.Content[i+1])
+			if err != nil {
+				return nil, err
+			}
+
+			tmp[key] = val
+		}
+
+		return tmp, nil
+
+	case yamlv3.SequenceNode:
+		var tmp = make([]interface{}, len(node.Content))
+		for i := range node.Content {
+			val, err := asType(node.Content[i])
+			if err != nil {
+				return nil, err
+			}
+
+			tmp[i] = val
+		}
+
+		return tmp, nil
+
+	case yamlv3.ScalarNode:
+		switch node.Tag {
+		case "!!str":
+			return node.Value, nil
+
+		case "!!timestamp":
+			return time.Parse(time.RFC3339, node.Value)
+
+		case "!!int":
+			return strconv.Atoi(node.Value)
+
+		case "!!float":
+			return strconv.ParseFloat(node.Value, 64)
+
+		case "!!bool":
+			return strconv.ParseBool(node.Value)
+
+		case "!!null":
+			return nil, nil
+
+		default:
+			return nil, fmt.Errorf("unknown YAML node tag %s", node.Tag)
+		}
 	}
 
-	return &node, nil
+	return nil, fmt.Errorf("failed to translate node (kind=%v, tag=%s) into specific type", node.Kind, node.Tag)
 }

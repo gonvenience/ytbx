@@ -54,14 +54,6 @@ func GetIdentifierFromNamedList(sequenceNode *yamlv3.Node) string {
 	return ""
 }
 
-// getEntryFromNamedList returns the entry that is identified by the identifier
-// key and a name, for example: `name: one` where name is the identifier key and
-// one the name. Function will return nil with bool false if there is no entry.
-func getEntryFromNamedList(sequenceNode *yamlv3.Node, identifier string, name string) (*yamlv3.Node, bool) {
-	node, err := getEntryByIdentifierAndName(sequenceNode, identifier, name)
-	return node, err == nil
-}
-
 func getEntryByIdentifierAndName(sequenceNode *yamlv3.Node, identifier string, name string) (*yamlv3.Node, error) {
 	idx, err := getIndexByIdentifierAndName(sequenceNode, identifier, name)
 	if err != nil {
@@ -86,23 +78,4 @@ func getIndexByIdentifierAndName(sequenceNode *yamlv3.Node, identifier string, n
 			identifier,
 			name,
 		)
-}
-
-func listNamesOfNamedList(sequenceNode *yamlv3.Node, identifier string) ([]string, error) {
-	result := make([]string, len(sequenceNode.Content))
-
-	for i, mappingNode := range sequenceNode.Content {
-		if mappingNode.Kind != yamlv3.MappingNode {
-			return nil, &NoNamedEntryListError{}
-		}
-
-		v, err := getValueByKey(mappingNode, identifier)
-		if err != nil {
-			return nil, err
-		}
-
-		result[i] = v.Value
-	}
-
-	return result, nil
 }

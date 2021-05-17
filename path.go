@@ -21,13 +21,19 @@
 package ytbx
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/gonvenience/bunt"
 	yamlv3 "gopkg.in/yaml.v3"
 )
+
+var goPatchRegEx = regexp.MustCompile(`^((\d+):)?(/.*)$`)
+var dotRegEx = regexp.MustCompile(`^((\d+):)?(.*)$`)
 
 // PathStyle is a custom type for supported path styles
 type PathStyle int
@@ -39,6 +45,29 @@ const (
 	GoPatchStyle
 )
 
+type pathSectionType int
+
+const (
+	mappingEntry pathSectionType = iota
+	namedListEntry
+	indexedListEntry
+	undefinedEntry
+)
+
+// Finder describes the general interface for Path structures
+type Finder interface {
+	DocumentIdx() int
+	RootDescription() string
+	GoPatchStyle() string
+	DotStyle() string
+}
+
+type section interface {
+	sectionType() pathSectionType
+	goPatchStyle() string
+	dotStyle() string
+}
+
 // Path points to a section in a data structure by using names to identify the
 // location.
 // Example:
@@ -49,112 +78,135 @@ const (
 // For example, `sizing.api.count` points to the key `sizing` of the root
 // element and in there to the key `api` and so on and so forth.
 type Path struct {
-	Root         *InputFile
-	DocumentIdx  int
-	PathElements []PathElement
+	root     *File
+	docIdx   int
+	sections []section
 }
 
-// PathElement represents one part of a path, which can either address an entry
-// in a map (by name), a named-entry list entry (key and name), or an entry in a
-// list (by index).
-type PathElement struct {
-	Idx  int
-	Key  string
-	Name string
+// TODO: remove me
+var _ Finder = &Path{}
+
+func newPath(path Path, section section) Path {
+	return Path{
+		root:     path.root,
+		docIdx:   path.docIdx,
+		sections: append(path.sections, section),
+	}
 }
 
-func (path Path) String() string {
-	return path.ToGoPatchStyle()
+// NewPathWithNamedEntryListSection creates a new path based on the provided
+// path by adding a new named entry list section
+func NewPathWithNamedEntryListSection(path Path, key string, name string) Path {
+	return newPath(path, listNamedSection{id: key, name: name})
 }
 
-// ToGoPatchStyle returns the path as a GoPatch style string.
-func (path *Path) ToGoPatchStyle() string {
-	if len(path.PathElements) == 0 {
+// NewPathWithNamedEntrySection creates a new path based on the provided path
+// by adding a new named entry section
+func NewPathWithNamedEntrySection(path Path, name string) Path {
+	return newPath(path, mappingNameSection{name: name})
+}
+
+// NewPathWithIndexedEntrySection creates a new path based on the provided path
+// by adding a new indexed entry section
+func NewPathWithIndexedEntrySection(path Path, idx int) Path {
+	return newPath(path, listIdxSection{idx: idx})
+}
+
+func (p Path) String() string {
+	return p.GoPatchStyle()
+}
+
+// GoPatchStyle returns the path as a GoPatch style string.
+func (p *Path) GoPatchStyle() string {
+	if len(p.sections) == 0 {
 		return "/"
 	}
 
-	sections := []string{""}
-	for _, element := range path.PathElements {
-		switch {
-		case element.Name != "" && element.Key == "":
-			sections = append(sections, element.Name)
-
-		case element.Name != "" && element.Key != "":
-			sections = append(sections, fmt.Sprintf("%s=%s", element.Key, element.Name))
-
-		default:
-			sections = append(sections, strconv.Itoa(element.Idx))
-		}
+	var buf bytes.Buffer
+	for _, section := range p.sections {
+		buf.WriteString("/")
+		buf.WriteString(section.goPatchStyle())
 	}
 
-	return strings.Join(sections, "/")
+	buf.WriteString(p.optionalDocIdxString())
+
+	return buf.String()
 }
 
-// ToDotStyle returns the path as a Dot-Style string.
-func (path *Path) ToDotStyle() string {
-	sections := []string{}
-
-	for _, element := range path.PathElements {
-		switch {
-		case element.Name != "":
-			sections = append(sections, element.Name)
-
-		case element.Idx >= 0:
-			sections = append(sections, strconv.Itoa(element.Idx))
-		}
+// DotStyle returns the path as a Dot-Style string.
+func (p *Path) DotStyle() string {
+	if len(p.sections) == 0 {
+		return "(root)"
 	}
 
-	return strings.Join(sections, ".")
+	var result = make([]string, len(p.sections))
+	for i, section := range p.sections {
+		result[i] = section.dotStyle()
+	}
+
+	return strings.Join(result, ".") + p.optionalDocIdxString()
+}
+
+// DocumentIdx returns the document index (document in the file)
+func (p *Path) DocumentIdx() int {
+	return p.docIdx
 }
 
 // RootDescription returns a description of the root level of this path, which
 // could be the number of the respective document inside a YAML or if available
 // the name of the document
-func (path *Path) RootDescription() string {
-	if path.Root != nil && path.DocumentIdx < len(path.Root.Names) {
-		return path.Root.Names[path.DocumentIdx]
+func (p *Path) RootDescription() string {
+	if p.root != nil && p.docIdx < len(p.root.Names) {
+		return p.root.Names[p.docIdx]
 	}
 
 	// Note: human style counting that starts with 1
-	return fmt.Sprintf("document #%d", path.DocumentIdx+1)
+	return fmt.Sprintf("document #%d", p.docIdx+1)
 }
 
-// NewPathWithPathElement returns a new path based on a given path adding a new
-// path element.
-func NewPathWithPathElement(path Path, pathElement PathElement) Path {
-	result := make([]PathElement, len(path.PathElements))
-	copy(result, path.PathElements)
+// Parent returns the parent of the provided Path
+func (p *Path) Parent() (Path, error) {
+	if len(p.sections) == 0 {
+		return Path{}, fmt.Errorf("path %s does not have a parent", p)
+	}
 
 	return Path{
-		Root:         path.Root,
-		DocumentIdx:  path.DocumentIdx,
-		PathElements: append(result, pathElement)}
+		docIdx:   p.docIdx,
+		sections: p.sections[:len(p.sections)-1],
+	}, nil
 }
 
-// NewPathWithNamedElement returns a new path based on a given path adding a new
-// of type entry in map using the name.
-func NewPathWithNamedElement(path Path, name interface{}) Path {
-	return NewPathWithPathElement(path, PathElement{
-		Idx:  -1,
-		Name: fmt.Sprintf("%v", name)})
+func (p *Path) optionalDocIdxString() string {
+	if p.root != nil && len(p.root.Documents) > 1 {
+		return fmt.Sprintf("  (document #%d)", p.docIdx+1)
+	}
+
+	return ""
 }
 
-// NewPathWithNamedListElement returns a new path based on a given path adding a
-// new of type entry in a named-entry list by using key and name.
-func NewPathWithNamedListElement(path Path, identifier interface{}, name interface{}) Path {
-	return NewPathWithPathElement(path, PathElement{
-		Idx:  -1,
-		Key:  fmt.Sprintf("%v", identifier),
-		Name: fmt.Sprintf("%v", name)})
-}
+type listIdxSection struct{ idx int }
 
-// NewPathWithIndexedListElement returns a new path based on a given path adding
-// a new of type list entry using the index.
-func NewPathWithIndexedListElement(path Path, idx int) Path {
-	return NewPathWithPathElement(path, PathElement{
-		Idx: idx,
-	})
-}
+func (s listIdxSection) sectionType() pathSectionType { return indexedListEntry }
+func (s listIdxSection) goPatchStyle() string         { return fmt.Sprintf("%d", s.idx) }
+func (s listIdxSection) dotStyle() string             { return fmt.Sprintf("%d", s.idx) }
+
+type listNamedSection struct{ id, name string }
+
+func (s listNamedSection) sectionType() pathSectionType { return namedListEntry }
+func (s listNamedSection) goPatchStyle() string         { return bunt.Sprintf("_%s_=%s", s.id, s.name) }
+func (s listNamedSection) dotStyle() string             { return bunt.Sprintf("_%s_", s.name) }
+
+type mappingNameSection struct{ name string }
+
+func (s mappingNameSection) sectionType() pathSectionType { return mappingEntry }
+func (s mappingNameSection) goPatchStyle() string         { return s.name }
+func (s mappingNameSection) dotStyle() string             { return s.name }
+
+type undefSection struct{ raw string }
+
+func (s undefSection) sectionType() pathSectionType { return undefinedEntry }
+func (s undefSection) goPatchStyle() string         { return s.raw }
+func (s undefSection) dotStyle() string             { return s.raw }
 
 // ComparePathsByValue returns all Path structure that have the same path value
 func ComparePathsByValue(fromLocation string, toLocation string, duplicatePaths []Path) ([]Path, error) {
@@ -169,18 +221,19 @@ func ComparePathsByValue(fromLocation string, toLocation string, duplicatePaths 
 	}
 
 	if len(from.Documents) > 1 || len(to.Documents) > 1 {
-		return nil, fmt.Errorf("input files have more than one document, which is not supported yet")
+		return nil, fmt.Errorf(
+			"input files have more than one document, which is not supported yet",
+		)
 	}
 
-	duplicatePathsWithTheSameValue := []Path{}
-
+	var duplicatePathsWithTheSameValue []Path
 	for _, path := range duplicatePaths {
-		fromValue, err := Grab(from.Documents[0], path.ToGoPatchStyle())
+		fromValue, err := GetPath(from.Documents[0], path.GoPatchStyle())
 		if err != nil {
 			return nil, err
 		}
 
-		toValue, err := Grab(to.Documents[0], path.ToGoPatchStyle())
+		toValue, err := GetPath(to.Documents[0], path.GoPatchStyle())
 		if err != nil {
 			return nil, err
 		}
@@ -207,11 +260,11 @@ func ComparePaths(fromLocation string, toLocation string, compareByValue bool) (
 
 	lookup := map[string]struct{}{}
 	for _, pathsFrom := range pathsFromLocation {
-		lookup[pathsFrom.ToGoPatchStyle()] = struct{}{}
+		lookup[pathsFrom.GoPatchStyle()] = struct{}{}
 	}
 
 	for _, pathsTo := range pathsToLocation {
-		if _, ok := lookup[pathsTo.ToGoPatchStyle()]; ok {
+		if _, ok := lookup[pathsTo.GoPatchStyle()]; ok {
 			duplicatePaths = append(duplicatePaths, pathsTo)
 		}
 	}
@@ -231,9 +284,9 @@ func ListPaths(location string) ([]Path, error) {
 		return nil, err
 	}
 
-	paths := []Path{}
+	var paths []Path
 	for idx, document := range inputfile.Documents {
-		root := Path{DocumentIdx: idx}
+		root := Path{docIdx: idx}
 
 		traverseTree(root, nil, document, func(path Path, _ *yamlv3.Node, _ *yamlv3.Node) {
 			paths = append(paths, path)
@@ -245,7 +298,7 @@ func ListPaths(location string) ([]Path, error) {
 
 // IsPathInTree returns whether the provided path is in the given YAML structure
 func IsPathInTree(tree *yamlv3.Node, pathString string) (bool, error) {
-	searchPath, err := ParsePathString(pathString, tree)
+	searchPath, err := ParsePathString(pathString)
 	if err != nil {
 		return false, err
 	}
@@ -255,7 +308,7 @@ func IsPathInTree(tree *yamlv3.Node, pathString string) (bool, error) {
 	go func() {
 		for _, node := range tree.Content {
 			traverseTree(Path{}, nil, node, func(path Path, _ *yamlv3.Node, _ *yamlv3.Node) {
-				if path.ToGoPatchStyle() == searchPath.ToGoPatchStyle() {
+				if path.GoPatchStyle() == searchPath.GoPatchStyle() {
 					resultChan <- true
 				}
 			})
@@ -267,206 +320,113 @@ func IsPathInTree(tree *yamlv3.Node, pathString string) (bool, error) {
 	return <-resultChan, nil
 }
 
-func traverseTree(path Path, parent *yamlv3.Node, node *yamlv3.Node, leafFunc func(path Path, parent *yamlv3.Node, leaf *yamlv3.Node)) {
-	switch node.Kind {
-	case yamlv3.DocumentNode:
-		traverseTree(
-			path,
-			node,
-			node.Content[0],
-			leafFunc,
-		)
-
-	case yamlv3.SequenceNode:
-		if identifier := GetIdentifierFromNamedList(node); identifier != "" {
-			for _, mappingNode := range node.Content {
-				name, _ := getValueByKey(mappingNode, identifier)
-				tmpPath := NewPathWithNamedListElement(path, identifier, name.Value)
-				for i := 0; i < len(mappingNode.Content); i += 2 {
-					k, v := mappingNode.Content[i], mappingNode.Content[i+1]
-					if k.Value == identifier { // skip the identifier mapping entry
-						continue
-					}
-
-					traverseTree(
-						NewPathWithNamedElement(tmpPath, k.Value),
-						node,
-						v,
-						leafFunc,
-					)
-				}
-			}
-
-		} else {
-			for idx, entry := range node.Content {
-				traverseTree(
-					NewPathWithIndexedListElement(path, idx),
-					node,
-					entry,
-					leafFunc,
-				)
-			}
-		}
-
-	case yamlv3.MappingNode:
-		for i := 0; i < len(node.Content); i += 2 {
-			k, v := node.Content[i], node.Content[i+1]
-			traverseTree(
-				NewPathWithNamedElement(path, k.Value),
-				node,
-				v,
-				leafFunc,
-			)
-		}
-
-	default:
-		leafFunc(path, parent, node)
+// ParsePathString returns a path by parsing a string representation
+// of a path, which can be one of the supported types.
+func ParsePathString(pathString string) (*Path, error) {
+	if goPatchRegEx.MatchString(pathString) {
+		return ParseGoPatchStylePathString(pathString)
 	}
+
+	return ParseDotStylePathString(pathString)
 }
 
 // ParseGoPatchStylePathString returns a path by parsing a string representation
 // which is assumed to be a GoPatch style path.
-func ParseGoPatchStylePathString(path string) (Path, error) {
+func ParseGoPatchStylePathString(path string) (*Path, error) {
+	matches := goPatchRegEx.FindStringSubmatch(path)
+	if matches == nil {
+		return nil, NewInvalidPathError(GoPatchStyle, path,
+			"failed to parse path string, because path does not match expected format",
+		)
+	}
+
+	var documentIdx int
+	if len(matches[2]) > 0 {
+		var err error
+		documentIdx, err = strconv.Atoi(matches[2])
+		if err != nil {
+			return nil, NewInvalidPathError(GoPatchStyle, path,
+				"failed to parse path string, because path does not match expected format",
+			)
+		}
+	}
+
+	// Reset path variable to only contain the raw path string
+	path = matches[3]
+
 	// Special case for root path
 	if path == "/" {
-		return Path{DocumentIdx: 0, PathElements: nil}, nil
+		return &Path{docIdx: documentIdx}, nil
 	}
 
 	// Hacky solution to deal with escaped slashes, replace them with a "safe"
 	// replacement string that is later resolved into a simple slash
 	path = strings.Replace(path, `\/`, `%2F`, -1)
 
-	elements := make([]PathElement, 0)
+	var elements []section
 	for i, section := range strings.Split(path, "/") {
 		if i == 0 {
 			continue
 		}
 
-		keyNameSplit := strings.Split(section, "=")
+		keyNameSplit := strings.SplitN(section, "=", 2)
 		switch len(keyNameSplit) {
 		case 1:
 			if idx, err := strconv.Atoi(keyNameSplit[0]); err == nil {
-				elements = append(elements, PathElement{
-					Idx: idx,
+				elements = append(elements, listIdxSection{
+					idx: idx,
 				})
 
 			} else {
-				elements = append(elements, PathElement{
-					Idx:  -1,
-					Name: strings.Replace(keyNameSplit[0], `%2F`, "/", -1),
+				elements = append(elements, mappingNameSection{
+					name: strings.Replace(keyNameSplit[0], `%2F`, "/", -1),
 				})
 			}
 
 		case 2:
-			elements = append(elements, PathElement{Idx: -1,
-				Key:  strings.Replace(keyNameSplit[0], `%2F`, "/", -1),
-				Name: strings.Replace(keyNameSplit[1], `%2F`, "/", -1),
+			elements = append(elements, listNamedSection{
+				id:   strings.Replace(keyNameSplit[0], `%2F`, "/", -1),
+				name: strings.Replace(keyNameSplit[1], `%2F`, "/", -1),
 			})
-
-		default:
-			return Path{}, &InvalidPathString{
-				Style:       GoPatchStyle,
-				PathString:  path,
-				Explanation: fmt.Sprintf("element '%s' cannot contain more than one equal sign", section),
-			}
 		}
 	}
 
-	return Path{DocumentIdx: 0, PathElements: elements}, nil
+	return &Path{docIdx: documentIdx, sections: elements}, nil
 }
 
 // ParseDotStylePathString returns a path by parsing a string representation
 // which is assumed to be a Dot-Style path.
-func ParseDotStylePathString(path string, node *yamlv3.Node) (Path, error) {
-	if node.Kind != yamlv3.DocumentNode {
-		return Path{}, fmt.Errorf("node has to be of kind DocumentNode for parsing a document path")
+func ParseDotStylePathString(path string) (*Path, error) {
+	matches := dotRegEx.FindStringSubmatch(path)
+	if matches == nil {
+		return nil, NewInvalidPathError(GoPatchStyle, path,
+			"failed to parse path string, because path does not match expected format",
+		)
 	}
 
-	elements := make([]PathElement, 0)
-	pointer := node.Content[0]
-
-	for _, section := range strings.Split(path, ".") {
-		switch {
-		case pointer == nil:
-			// If the pointer is nil, it means that the previous section of the path
-			// string could not be found in the data structure and that all remaining
-			// sections are assumed to be of type map.
-			elements = append(elements, PathElement{Idx: -1, Name: section})
-
-		case pointer.Kind == yamlv3.MappingNode:
-			if value, err := getValueByKey(pointer, section); err == nil {
-				pointer = value
-				elements = append(elements, PathElement{Idx: -1, Name: section})
-
-			} else {
-				pointer = nil
-				elements = append(elements, PathElement{Idx: -1, Name: section})
-			}
-
-		case pointer.Kind == yamlv3.SequenceNode:
-			list := pointer.Content
-			if id, err := strconv.Atoi(section); err == nil {
-				if id < 0 || id >= len(list) {
-					return Path{}, &InvalidPathString{
-						Style:       DotStyle,
-						PathString:  path,
-						Explanation: fmt.Sprintf("provided list index %d is not in range: 0..%d", id, len(list)-1),
-					}
-				}
-
-				pointer = list[id]
-				elements = append(elements, PathElement{Idx: id})
-
-			} else {
-				identifier := GetIdentifierFromNamedList(pointer)
-				value, ok := getEntryFromNamedList(pointer, identifier, section)
-				if !ok {
-					names, err := listNamesOfNamedList(pointer, identifier)
-					if err != nil {
-						return Path{}, &InvalidPathString{
-							Style:       DotStyle,
-							PathString:  path,
-							Explanation: fmt.Sprintf("provided named list entry '%s' cannot be found in list", section),
-						}
-					}
-
-					return Path{}, &InvalidPathString{
-						Style:       DotStyle,
-						PathString:  path,
-						Explanation: fmt.Sprintf("provided named list entry '%s' cannot be found in list, available names are: %s", section, strings.Join(names, ", ")),
-					}
-				}
-
-				pointer = value
-				elements = append(elements, PathElement{Idx: -1, Key: identifier, Name: section})
-			}
+	var documentIdx int
+	if len(matches[2]) > 0 {
+		var err error
+		documentIdx, err = strconv.Atoi(matches[2])
+		if err != nil {
+			return nil, NewInvalidPathError(GoPatchStyle, path,
+				"failed to parse path string, cannot parse document index: %s", matches[2],
+			)
 		}
 	}
 
-	return Path{DocumentIdx: 0, PathElements: elements}, nil
-}
+	// Reset path variable to only contain the raw path string
+	path = matches[3]
 
-// ParsePathString returns a path by parsing a string representation
-// of a path, which can be one of the supported types.
-func ParsePathString(pathString string, node *yamlv3.Node) (Path, error) {
-	if strings.HasPrefix(pathString, "/") {
-		return ParseGoPatchStylePathString(pathString)
+	var elements []section
+	for _, section := range strings.Split(path, ".") {
+		if idx, err := strconv.Atoi(section); err == nil {
+			elements = append(elements, listIdxSection{idx})
+
+		} else {
+			elements = append(elements, undefSection{section})
+		}
 	}
 
-	return ParseDotStylePathString(pathString, node)
-}
-
-func (element PathElement) isMapElement() bool {
-	return len(element.Key) == 0 &&
-		len(element.Name) > 0
-}
-
-func (element PathElement) isComplexListElement() bool {
-	return len(element.Key) > 0 &&
-		len(element.Name) > 0
-}
-
-func (element PathElement) isSimpleListElement() bool {
-	return len(element.Key) == 0 &&
-		len(element.Name) == 0
+	return &Path{docIdx: documentIdx, sections: elements}, nil
 }

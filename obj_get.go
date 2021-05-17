@@ -26,41 +26,46 @@ import (
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// Grab gets the value from the provided YAML tree using a path to traverse
-// through the tree structure
-func Grab(node *yamlv3.Node, pathString string) (*yamlv3.Node, error) {
-	path, err := ParsePathString(pathString, node)
+// GetPath is a convenience function for Get, which parses the given path
+// and then delegates to the Get function
+func GetPath(node *yamlv3.Node, pathString string) (*yamlv3.Node, error) {
+	path, err := ParsePathString(pathString)
 	if err != nil {
 		return nil, err
 	}
 
 	switch node.Kind {
 	case yamlv3.DocumentNode:
-		return grabByPath(node.Content[0], path)
+		return Get(node.Content[0], *path)
 
 	default:
-		return grabByPath(node, path)
+		return Get(node, *path)
 	}
 }
 
-func grabByPath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
-	pointer := node
-	pointerPath := Path{DocumentIdx: path.DocumentIdx}
+// Get retrieves the value at the provided Path in the given node
+func Get(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
+	if node.Kind == yamlv3.DocumentNode {
+		node = node.Content[0]
+	}
 
-	for _, element := range path.PathElements {
-		switch {
+	pointer := node
+	pointerPath := Path{docIdx: path.docIdx}
+
+	for _, element := range path.sections {
+		switch element := element.(type) {
 		// Key/Value Map, where the element name is the key for the map
-		case element.isMapElement():
+		case mappingNameSection:
 			if pointer.Kind != yamlv3.MappingNode {
 				return nil,
 					fmt.Errorf("failed to traverse tree, expected %s but found type %s at %s",
 						typeMap,
 						GetType(pointer),
-						pointerPath.ToGoPatchStyle(),
+						pointerPath.GoPatchStyle(),
 					)
 			}
 
-			entry, err := getValueByKey(pointer, element.Name)
+			entry, err := getValueByKey(pointer, element.name)
 			if err != nil {
 				return nil, err
 			}
@@ -69,17 +74,17 @@ func grabByPath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 
 		// Complex List, where each list entry is a Key/Value map and the entry is
 		// identified by name using an identifier (e.g. name, key, or id)
-		case element.isComplexListElement():
+		case listNamedSection:
 			if pointer.Kind != yamlv3.SequenceNode {
 				return nil,
 					fmt.Errorf("failed to traverse tree, expected %s but found type %s at %s",
 						typeComplexList,
 						GetType(pointer),
-						pointerPath.ToGoPatchStyle(),
+						pointerPath.GoPatchStyle(),
 					)
 			}
 
-			entry, err := getEntryByIdentifierAndName(pointer, element.Key, element.Name)
+			entry, err := getEntryByIdentifierAndName(pointer, element.id, element.name)
 			if err != nil {
 				return nil, err
 			}
@@ -87,33 +92,44 @@ func grabByPath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 			pointer = entry
 
 		// Simple List (identified by index)
-		case element.isSimpleListElement():
+		case listIdxSection:
 			if pointer.Kind != yamlv3.SequenceNode {
 				return nil,
 					fmt.Errorf("failed to traverse tree, expected %s but found type %s at %s",
 						typeSimpleList,
 						GetType(pointer),
-						pointerPath.ToGoPatchStyle(),
+						pointerPath.GoPatchStyle(),
 					)
 			}
 
-			if element.Idx < 0 || element.Idx >= len(pointer.Content) {
+			if element.idx == -1 {
+				element.idx = len(pointer.Content) - 1
+			}
+
+			if element.idx < 0 || element.idx >= len(pointer.Content) {
 				return nil,
-					fmt.Errorf("failed to traverse tree, provided %s index %d is not in range: 0..%d",
+					fmt.Errorf(
+						"failed to traverse tree, provided %s index %d is not in range: 0..%d",
 						typeSimpleList,
-						element.Idx,
+						element.idx,
 						len(pointer.Content)-1,
 					)
 			}
 
-			pointer = pointer.Content[element.Idx]
+			pointer = pointer.Content[element.idx]
+
+		case undefSection:
+			panic("not implemented yet")
 
 		default:
-			return nil, fmt.Errorf("failed to traverse tree, the provided path %s seems to be invalid", path)
+			return nil, fmt.Errorf(
+				"failed to traverse tree, the provided path %s seems to be invalid",
+				path,
+			)
 		}
 
 		// Update the path that the current pointer to keep track of the traversing
-		pointerPath.PathElements = append(pointerPath.PathElements, element)
+		pointerPath.sections = append(pointerPath.sections, element)
 	}
 
 	return pointer, nil

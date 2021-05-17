@@ -24,18 +24,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"testing"
 
 	. "github.com/gonvenience/bunt"
+	. "github.com/gonvenience/ytbx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/types"
 
-	"github.com/gonvenience/neat"
 	yamlv3 "gopkg.in/yaml.v3"
-
-	"github.com/gonvenience/ytbx"
 )
 
 var exampleTOML = `
@@ -97,12 +94,25 @@ func assets(pathElement ...string) string {
 	return abs
 }
 
+func parseGoPatch(path string) Path {
+	result, err := ParseGoPatchStylePathString(path)
+	Expect(err).ToNot(HaveOccurred())
+
+	return *result
+}
+
+func loadFile(filename string) *File {
+	file, err := LoadFile(filename)
+	Expect(err).ToNot(HaveOccurred())
+	return &file
+}
+
 func yml(input string) *yamlv3.Node {
 	// If input is a file location, load this as YAML
 	if _, err := os.Open(input); err == nil {
-		var content ytbx.InputFile
+		var content File
 		var err error
-		if content, err = ytbx.LoadFile(input); err != nil {
+		if content, err = LoadFile(input); err != nil {
 			Fail(fmt.Sprintf("Failed to load YAML MapSlice from '%s': %s", input, err.Error()))
 		}
 
@@ -124,7 +134,7 @@ func list(input string) *yamlv3.Node {
 }
 
 func singleDoc(input string) *yamlv3.Node {
-	docs, err := ytbx.LoadYAMLDocuments([]byte(input))
+	docs, err := LoadYAMLDocuments([]byte(input))
 	if err != nil {
 		Fail(fmt.Sprintf("Failed to parse as YAML:\n%s\n\n%v", input, err))
 	}
@@ -134,32 +144,6 @@ func singleDoc(input string) *yamlv3.Node {
 	}
 
 	return docs[0]
-}
-
-func grab(node *yamlv3.Node, path string) interface{} {
-	v, err := ytbx.Grab(node, path)
-	if err != nil {
-		out, _ := neat.ToYAMLString(node)
-		Fail(fmt.Sprintf("Failed to grab by path %s from %s", path, out))
-	}
-
-	switch v.Tag {
-	case "!!str":
-		return v.Value
-
-	case "!!int":
-		i, _ := strconv.Atoi(v.Value)
-		return i
-	}
-
-	return v
-}
-
-func grabError(node *yamlv3.Node, path string) string {
-	value, err := ytbx.Grab(node, path)
-	Expect(value).To(BeNil())
-	Expect(err).ToNot(BeNil())
-	return err.Error()
 }
 
 func BeAsNode(expected *yamlv3.Node) GomegaMatcher {

@@ -26,7 +26,7 @@ import (
 
 // listKeys returns a list of the keys of a Go-YAML v3 MappingNode (map)
 func listKeys(mappingNode *yamlv3.Node) []string {
-	keys := []string{}
+	var keys []string
 	for i := 0; i < len(mappingNode.Content); i += 2 {
 		keys = append(keys, mappingNode.Content[i].Value)
 	}

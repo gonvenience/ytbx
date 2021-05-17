@@ -21,45 +21,49 @@
 package ytbx_test
 
 import (
+	. "github.com/gonvenience/ytbx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"gopkg.in/yaml.v3"
-
-	"github.com/gonvenience/ytbx"
 )
 
-var _ = Describe("Delete from YAML", func() {
-	var example *yaml.Node
+var _ = Describe("deleting entries", func() {
+	Context("deleting using File struct", func() {
+		var file *File
 
-	BeforeEach(func() {
-		example = yml(assets("examples", "types.yml"))
-	})
+		BeforeEach(func() {
+			file = loadFile(assets("examples", "types.yml"))
+		})
 
-	Context("Delete path from given YAML structure", func() {
+		AfterEach(func() {
+			file = nil
+		})
+
 		It("should delete an entry in a map referenced by the path", func() {
-			node, err := ytbx.Delete(example, "/yaml/map/before")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(node.Value).To(BeEquivalentTo("after"))
-			Expect(ytbx.IsPathInTree(example, "/yaml/map/before")).To(BeFalse())
+			var path = parseGoPatch("/yaml/map/before")
+
+			Expect(file.HasPath(path)).To(BeTrue())
+			Expect(file.Del(path)).To(BeNil())
+			Expect(file.HasPath(path)).To(BeFalse())
 		})
 
 		It("should delete an entry in a simple list referenced by the path", func() {
-			node, err := ytbx.Delete(example, "/yaml/simple-list/1")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(node.Value).To(BeEquivalentTo("B"))
+			var path = parseGoPatch("/yaml/simple-list/1")
 
-			list, err := ytbx.Grab(example, "/yaml/simple-list")
+			Expect(file.HasPath(path)).To(BeTrue())
+			Expect(file.Del(path)).To(BeNil())
+
+			list, err := GetPath(file.Documents[0], "/yaml/simple-list")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(list.Content)).To(Equal(4))
 		})
 
 		It("should delete an entry in a named entry list referenced by the path", func() {
-			node, err := ytbx.Delete(example, "/yaml/named-entry-list-using-name/name=C")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(node).To(BeAsNode(yml(`{ name: C, foo: bar }`)))
+			var path = parseGoPatch("/yaml/named-entry-list-using-name/name=C")
 
-			list, err := ytbx.Grab(example, "/yaml/named-entry-list-using-name")
+			Expect(file.HasPath(path)).To(BeTrue())
+			Expect(file.Del(path)).To(BeNil())
+
+			list, err := GetPath(file.Documents[0], "/yaml/named-entry-list-using-name")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(list.Content)).To(Equal(4))
 		})

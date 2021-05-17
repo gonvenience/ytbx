@@ -47,20 +47,10 @@ import (
 var PreserveKeyOrderInJSON = false
 
 // DecoderProxy can either be used with the standard JSON Decoder, or the
-// specialised JSON library fork that supports preserving key order
+// specialized JSON library fork that supports preserving key order
 type DecoderProxy struct {
 	standard *json.Decoder
 	ordered  *ordered.Decoder
-}
-
-// InputFile represents the actual input file (local, or fetched remotely) that
-// needs to be processed. It can contain multiple documents, where a document
-// is a map or a list of things.
-type InputFile struct {
-	Location  string
-	Note      string
-	Documents []*yamlv3.Node
-	Names     []string
 }
 
 // NewDecoderProxy creates a new decoder proxy which either works in ordered
@@ -88,7 +78,7 @@ func (d *DecoderProxy) Decode(v interface{}) error {
 // the provided input location. It will output the absolute path of the file
 // rather than the possibly relative location, or it will show the URL in the
 // usual look-and-feel of URIs.
-func HumanReadableLocationInformation(inputFile InputFile) string {
+func HumanReadableLocationInformation(inputFile File) string {
 	var buf bytes.Buffer
 
 	// Start with a nice location output
@@ -129,9 +119,9 @@ func HumanReadableLocation(location string) string {
 }
 
 // LoadFiles concurrently loads two files from the provided locations
-func LoadFiles(locationA string, locationB string) (InputFile, InputFile, error) {
+func LoadFiles(locationA string, locationB string) (File, File, error) {
 	type resultPair struct {
-		result InputFile
+		result File
 		err    error
 	}
 
@@ -150,12 +140,12 @@ func LoadFiles(locationA string, locationB string) (InputFile, InputFile, error)
 
 	from := <-fromChan
 	if from.err != nil {
-		return InputFile{}, InputFile{}, from.err
+		return File{}, File{}, from.err
 	}
 
 	to := <-toChan
 	if to.err != nil {
-		return InputFile{}, InputFile{}, to.err
+		return File{}, File{}, to.err
 	}
 
 	return from.result, to.result, nil
@@ -163,7 +153,7 @@ func LoadFiles(locationA string, locationB string) (InputFile, InputFile, error)
 
 // LoadFile processes the provided input location to load it as one of the
 // supported document formats, or plain text if nothing else works.
-func LoadFile(location string) (InputFile, error) {
+func LoadFile(location string) (File, error) {
 	if info, err := os.Stat(location); err == nil && info.IsDir() {
 		return LoadDirectory(location)
 	}
@@ -175,14 +165,14 @@ func LoadFile(location string) (InputFile, error) {
 	)
 
 	if data, err = getBytesFromLocation(location); err != nil {
-		return InputFile{}, wrap.Errorf(err, "unable to load data from %s", HumanReadableLocation(location))
+		return File{}, wrap.Errorf(err, "unable to load data from %s", HumanReadableLocation(location))
 	}
 
 	if documents, err = LoadDocuments(data); err != nil {
-		return InputFile{}, wrap.Errorf(err, "unable to parse data from %s", HumanReadableLocation(location))
+		return File{}, wrap.Errorf(err, "unable to parse data from %s", HumanReadableLocation(location))
 	}
 
-	return InputFile{
+	return File{
 		Location:  location,
 		Documents: documents,
 	}, nil
@@ -190,29 +180,29 @@ func LoadFile(location string) (InputFile, error) {
 
 // LoadDirectory reads the provided location as a directory and processes all
 // files in the directory as documents
-func LoadDirectory(location string) (InputFile, error) {
+func LoadDirectory(location string) (File, error) {
 	files, err := ioutil.ReadDir(location)
 	if err != nil {
-		return InputFile{}, wrap.Errorf(err, "failed to read files in directory %s", location)
+		return File{}, wrap.Errorf(err, "failed to read files in directory %s", location)
 	}
 
 	sort.Slice(files, func(i, j int) bool {
 		return strings.Compare(files[i].Name(), files[j].Name()) < 0
 	})
 
-	var result = InputFile{
+	var result = File{
 		Location: location,
 	}
 
 	for _, file := range files {
-		bytes, err := getBytesFromLocation(filepath.Join(location, file.Name()))
+		data, err := getBytesFromLocation(filepath.Join(location, file.Name()))
 		if err != nil {
-			return InputFile{}, err
+			return File{}, err
 		}
 
-		docs, err := LoadDocuments(bytes)
+		docs, err := LoadDocuments(data)
 		if err != nil {
-			return InputFile{}, err
+			return File{}, err
 		}
 
 		result.Documents = append(result.Documents, docs...)
@@ -229,8 +219,8 @@ func LoadDirectory(location string) (InputFile, error) {
 func LoadDocuments(input []byte) ([]*yamlv3.Node, error) {
 	// There is no easy check whether the input data is TOML format, this is
 	// why there is currently no other option than simply trying to parse it.
-	if toml, err := LoadTOMLDocuments(input); err == nil {
-		return toml, err
+	if result, err := LoadTOMLDocuments(input); err == nil {
+		return result, err
 	}
 
 	// In case the input data set starts with either a map or list start
@@ -249,7 +239,7 @@ func LoadDocuments(input []byte) ([]*yamlv3.Node, error) {
 // potential multiple documents. Each document in the JSON stream results in an
 // entry of the result slice.
 func LoadJSONDocuments(input []byte) ([]*yamlv3.Node, error) {
-	values := []*yamlv3.Node{}
+	var values []*yamlv3.Node
 
 	decoder := NewDecoderProxy(PreserveKeyOrderInJSON, bytes.NewReader(input))
 	for {
@@ -263,7 +253,7 @@ func LoadJSONDocuments(input []byte) ([]*yamlv3.Node, error) {
 			return nil, err
 		}
 
-		node, err := asYAMLNode(value)
+		node, err := asNode(value)
 		if err != nil {
 			return nil, err
 		}
@@ -278,7 +268,7 @@ func LoadJSONDocuments(input []byte) ([]*yamlv3.Node, error) {
 // potential multiple documents. Each document in the YAML stream results in an
 // entry of the result slice.
 func LoadYAMLDocuments(input []byte) ([]*yamlv3.Node, error) {
-	documents := []*yamlv3.Node{}
+	var documents []*yamlv3.Node
 
 	decoder := yamlv3.NewDecoder(bytes.NewReader(input))
 	for {
@@ -311,7 +301,7 @@ func LoadTOMLDocuments(input []byte) ([]*yamlv3.Node, error) {
 		return nil, err
 	}
 
-	node, err := asYAMLNode(data)
+	node, err := asNode(data)
 	if err != nil {
 		return nil, err
 	}
@@ -348,11 +338,4 @@ func getBytesFromLocation(location string) ([]byte, error) {
 
 	// In any other case, bail out ...
 	return nil, fmt.Errorf("unable to get any content using location %s: it is not a file or usable URI", location)
-}
-
-// IsStdin checks whether the provided input location refers to the dash
-// character which usually serves as the replacement to point to STDIN rather
-// than a file.
-func IsStdin(location string) bool {
-	return strings.TrimSpace(location) == "-"
 }

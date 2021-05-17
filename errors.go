@@ -38,26 +38,27 @@ func (e *KeyNotFoundInMapError) Error() string {
 		strings.Join(e.AvailableKeys, ", "))
 }
 
-// NoNamedEntryListError represents the situation where a list was expected to
-// be a named-entry list, but one or more entries were not maps.
-type NoNamedEntryListError struct {
+// NewInvalidPathError creates a new InvalidPathError
+func NewInvalidPathError(style PathStyle, pathString string, format string, a ...interface{}) *InvalidPathError {
+	return &InvalidPathError{
+		Style:       style,
+		PathString:  pathString,
+		Explanation: fmt.Errorf(format, a...),
+	}
 }
 
-func (e *NoNamedEntryListError) Error() string {
-	return "not a named-entry list, one or more entries are not of type map"
-}
-
-// InvalidPathString represents the error that a path string is not a valid
-// Dot-style or GoPatch path syntax and does not match a provided document.
-type InvalidPathString struct {
+// InvalidPathError represents the error that a path is not a valid Dot-style
+// or GoPatch path syntax
+type InvalidPathError struct {
 	Style       PathStyle
 	PathString  string
-	Explanation string
+	Explanation error
 }
 
-func (e *InvalidPathString) Error() string {
-	return fmt.Sprintf("invalid %v style path %s, %s",
+func (e *InvalidPathError) Error() string {
+	return fmt.Sprintf("invalid %v path %s: %s",
 		e.Style,
 		e.PathString,
-		e.Explanation)
+		e.Explanation,
+	)
 }

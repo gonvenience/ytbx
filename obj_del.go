@@ -21,38 +21,42 @@
 package ytbx
 
 import (
+	"fmt"
+
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
-// Delete removes the section identified by the path from the YAML structure
-func Delete(node *yamlv3.Node, pathString string) (*yamlv3.Node, error) {
-	path, err := ParsePathString(pathString, node)
+// DeletePath is a convenience function for Delete, which parses the given path
+// and then delegates to the Delete function
+func DeletePath(node *yamlv3.Node, pathString string) (*yamlv3.Node, error) {
+	path, err := ParsePathString(pathString)
 	if err != nil {
 		return nil, err
 	}
 
 	switch node.Kind {
 	case yamlv3.DocumentNode:
-		return deletePath(node.Content[0], path)
+		return Delete(node.Content[0], *path)
 
 	default:
-		return deletePath(node, path)
+		return Delete(node, *path)
 	}
 }
 
-func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
-	parentPath := Path{
-		DocumentIdx:  path.DocumentIdx,
-		PathElements: path.PathElements[:len(path.PathElements)-1],
+// Delete removes the provided Path from the given node
+func Delete(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
+	parentPath, err := path.Parent()
+	if err != nil {
+		return nil, err
 	}
 
-	parent, err := grabByPath(node, parentPath)
+	parent, err := Get(node, parentPath)
 	if err != nil {
 		return nil, err
 	}
 
 	var (
-		lastPathElement              = path.PathElements[len(path.PathElements)-1]
+		lastPathElement              = path.sections[len(path.sections)-1]
 		deletedNode     *yamlv3.Node = nil
 	)
 
@@ -62,7 +66,7 @@ func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 		for i := 0; i < len(parent.Content); i += 2 {
 			k, v := parent.Content[i], parent.Content[i+1]
 
-			if k.Value == lastPathElement.Name {
+			if k.Value == lastPathElement.(mappingNameSection).name {
 				deleteIdx = i
 				deletedNode = v
 				break
@@ -80,13 +84,18 @@ func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 
 	case yamlv3.SequenceNode:
 		var deleteIdx int
-		if lastPathElement.isSimpleListElement() {
-			deleteIdx = lastPathElement.Idx
-		} else {
-			deleteIdx, err = getIndexByIdentifierAndName(parent, lastPathElement.Key, lastPathElement.Name)
+		switch obj := lastPathElement.(type) {
+		case listIdxSection:
+			deleteIdx = obj.idx
+
+		case listNamedSection:
+			deleteIdx, err = getIndexByIdentifierAndName(parent, obj.id, obj.name)
 			if err != nil {
 				return nil, err
 			}
+
+		default:
+			return nil, fmt.Errorf("illegal type %T in sequence node delete", lastPathElement)
 		}
 
 		deletedNode = parent.Content[deleteIdx]
@@ -101,5 +110,5 @@ func deletePath(node *yamlv3.Node, path Path) (*yamlv3.Node, error) {
 		return deletedNode, nil
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("failed to delete path %s, because it could not be found", path)
 }
