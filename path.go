@@ -499,6 +499,17 @@ func ParsePathString(pathString string, node *yamlv3.Node) (Path, error) {
 	return ParseDotStylePathString(pathString, node)
 }
 
+// ParsePathStringUnsafe returns a path by parsing a string representation of a
+// path, which can either be GoPatch or DotStyle, but will not check the path
+// elements against a given YAML document to verify the types (unsafe)
+func ParsePathStringUnsafe(pathString string) (Path, error) {
+	if strings.HasPrefix(pathString, "/") {
+		return ParseGoPatchStylePathString(pathString)
+	}
+
+	return ParseDotStylePathStringUnsafe(pathString)
+}
+
 func (element PathElement) isMapElement() bool {
 	return len(element.Key) == 0 &&
 		len(element.Name) > 0

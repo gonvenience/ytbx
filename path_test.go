@@ -101,6 +101,32 @@ var _ = Describe("path tests", func() {
 				{Idx: -1, Key: "", Name: "newkey"},
 			}}))
 		})
+
+		It("should parse an unspecified path type without checking against a YAML document (unsafe)", func() {
+			Expect(ParsePathStringUnsafe("list.one.newkey")).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "", Name: "one"},
+				{Idx: -1, Key: "", Name: "newkey"},
+			}}))
+
+			Expect(ParsePathStringUnsafe("list.0.newkey")).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: 0, Key: "", Name: ""},
+				{Idx: -1, Key: "", Name: "newkey"},
+			}}))
+
+			Expect(ParsePathStringUnsafe("/list/one/newkey")).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: -1, Key: "", Name: "one"},
+				{Idx: -1, Key: "", Name: "newkey"},
+			}}))
+
+			Expect(ParsePathStringUnsafe("/list/0/newkey")).To(BeEquivalentTo(Path{DocumentIdx: 0, PathElements: []PathElement{
+				{Idx: -1, Key: "", Name: "list"},
+				{Idx: 0, Key: "", Name: ""},
+				{Idx: -1, Key: "", Name: "newkey"},
+			}}))
+		})
 	})
 
 	Context("parse go-patch style path strings into paths", func() {
