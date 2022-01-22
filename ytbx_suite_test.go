@@ -30,9 +30,9 @@ import (
 	. "github.com/gonvenience/bunt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/types"
 
 	"github.com/gonvenience/neat"
+	"github.com/onsi/gomega/types"
 	yamlv3 "gopkg.in/yaml.v3"
 
 	"github.com/gonvenience/ytbx"
@@ -162,7 +162,7 @@ func grabError(node *yamlv3.Node, path string) string {
 	return err.Error()
 }
 
-func BeAsNode(expected *yamlv3.Node) GomegaMatcher {
+func BeAsNode(expected *yamlv3.Node) types.GomegaMatcher {
 	return &nodeMatcher{
 		expected: expected,
 	}
