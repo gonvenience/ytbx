@@ -71,7 +71,9 @@ var _ = Describe("Input test cases", func() {
 				}
 
 				w.WriteHeader(200)
-				w.Write(data)
+				if _, err := w.Write(data); err != nil {
+					Fail(err.Error())
+				}
 			})
 
 			server = httptest.NewServer(r)
