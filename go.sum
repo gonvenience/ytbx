@@ -31,8 +31,9 @@ github.com/gonvenience/term v1.0.1 h1:8bg2O0ox0Ss64nnUxW5AXlSHhllc8dTOSKuKu6uoGp
 github.com/gonvenience/term v1.0.1/go.mod h1:TrQEhxBNE/ng5kTV+S0OvQowTDJSfhlBeZbcOmTR6qI=
 github.com/gonvenience/text v1.0.6 h1:9JH9fz0BL0NX4uKmjLuVcsBKiniPa+XLpf8KH9so44U=
 github.com/gonvenience/text v1.0.6/go.mod h1:9U5WbkT/5wR5+aNMR4HucamY+HgVMEn+UbF78XHmUio=
-github.com/gonvenience/wrap v1.1.0 h1:d8gEZrXS/zg4BC1q0U4nHpPIh5k6muKpQ1+rQFBwpYc=
 github.com/gonvenience/wrap v1.1.0/go.mod h1:L47Cm1sK1G8QmFAYQfkHcF/sQ1IBJUa0u4sjqiLqPdM=
+github.com/gonvenience/wrap v1.1.1 h1:7cMuyMtTdUe2aObp760CzXo/wOmFaY7JXsIksu8NYYc=
+github.com/gonvenience/wrap v1.1.1/go.mod h1:u27bruNdIB6U5nnR0qq+GRRKbAJzEqC0H3DBHxl7YNM=
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
