@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.0.0
 	github.com/gonvenience/bunt v1.3.2
 	github.com/gonvenience/neat v1.3.7
-	github.com/gonvenience/text v1.0.6
+	github.com/gonvenience/text v1.0.7
 	github.com/gonvenience/wrap v1.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo v1.16.5
