@@ -114,10 +114,6 @@ func HumanReadableLocation(location string) string {
 	}
 
 	if _, err := os.Stat(location); err == nil {
-		if abs, err := filepath.Abs(location); err == nil {
-			location = abs
-		}
-
 		return bunt.Sprintf("*%s*", location)
 	}
 
