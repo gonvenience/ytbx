@@ -7,7 +7,7 @@ require (
 	github.com/gonvenience/bunt v1.3.4
 	github.com/gonvenience/neat v1.3.11
 	github.com/gonvenience/text v1.0.7
-	github.com/gonvenience/wrap v1.1.1
+	github.com/gonvenience/wrap v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
