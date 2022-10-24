@@ -22,12 +22,11 @@ package ytbx_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	. "github.com/gorilla/mux"
@@ -65,7 +64,7 @@ var _ = Describe("Input test cases", func() {
 					return
 				}
 
-				data, err := ioutil.ReadFile(location)
+				data, err := os.ReadFile(location)
 				if err != nil {
 					Fail(err.Error())
 				}

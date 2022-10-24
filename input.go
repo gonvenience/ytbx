@@ -25,7 +25,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -187,7 +186,7 @@ func LoadFile(location string) (InputFile, error) {
 // LoadDirectory reads the provided location as a directory and processes all
 // files in the directory as documents
 func LoadDirectory(location string) (InputFile, error) {
-	files, err := ioutil.ReadDir(location)
+	files, err := os.ReadDir(location)
 	if err != nil {
 		return InputFile{}, wrap.Errorf(err, "failed to read files in directory %s", location)
 	}
@@ -318,12 +317,12 @@ func LoadTOMLDocuments(input []byte) ([]*yamlv3.Node, error) {
 func getBytesFromLocation(location string) ([]byte, error) {
 	// Handle special location "-" which refers to STDIN stream
 	if IsStdin(location) {
-		return ioutil.ReadAll(os.Stdin)
+		return io.ReadAll(os.Stdin)
 	}
 
 	// Handle location as local file if there is a file at that location
 	if _, err := os.Stat(location); err == nil {
-		return ioutil.ReadFile(location)
+		return os.ReadFile(location)
 	}
 
 	// Handle location as a URI if it looks like one
@@ -334,7 +333,7 @@ func getBytesFromLocation(location string) ([]byte, error) {
 		}
 		defer response.Body.Close()
 
-		data, err := ioutil.ReadAll(response.Body)
+		data, err := io.ReadAll(response.Body)
 		if response.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("failed to retrieve data from location %s: %s", location, string(data))
 		}
