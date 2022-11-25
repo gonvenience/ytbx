@@ -24,23 +24,19 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v3
 
-    - name: Verify Go Modules Setup
-      run: |
-        go mod verify
-
     - name: Build Go Code
       run: |
         go build ./...
 
     - name: Run Go Unit Tests
       run: |
-        go run github.com/onsi/ginkgo/v2/ginkgo \
+        go install github.com/onsi/ginkgo/v2/ginkgo
+        ginkgo run \
           --coverprofile=unit.coverprofile \
           --randomize-all \
           --randomize-suites \
           --fail-on-pending \
           --keep-going \
-          --slow-spec-threshold=4m \
           --compilers=2 \
           --race \
           --trace \
@@ -52,4 +48,4 @@ jobs:
         files: unit.coverprofile
         flags: unittests
         fail_ci_if_error: true
-        verbose: true
+        verbose: false
