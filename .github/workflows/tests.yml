@@ -30,7 +30,7 @@ jobs:
 
     - name: Run Go Unit Tests
       run: |
-        go install github.com/onsi/ginkgo/v2/ginkgo
+        go install -mod=mod github.com/onsi/ginkgo/v2/ginkgo
         ginkgo run \
           --coverprofile=unit.coverprofile \
           --randomize-all \
