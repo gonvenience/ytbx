@@ -207,7 +207,7 @@ func LoadDirectory(location string) (InputFile, error) {
 
 		docs, err := LoadDocuments(bytes)
 		if err != nil {
-			return InputFile{}, err
+			return InputFile{}, wrap.Errorf(err, "failed to read %s", filepath.Join(location, file.Name()))
 		}
 
 		result.Documents = append(result.Documents, docs...)
