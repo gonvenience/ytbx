@@ -35,7 +35,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/text"
-	"github.com/gonvenience/wrap"
 	ordered "github.com/virtuald/go-ordered-json"
 	yamlv3 "gopkg.in/yaml.v3"
 )
@@ -170,11 +169,11 @@ func LoadFile(location string) (InputFile, error) {
 	)
 
 	if data, err = getBytesFromLocation(location); err != nil {
-		return InputFile{}, wrap.Errorf(err, "unable to load data from %s", HumanReadableLocation(location))
+		return InputFile{}, fmt.Errorf("unable to load data from %s: %w", HumanReadableLocation(location), err)
 	}
 
 	if documents, err = LoadDocuments(data); err != nil {
-		return InputFile{}, wrap.Errorf(err, "unable to parse data from %s", HumanReadableLocation(location))
+		return InputFile{}, fmt.Errorf("unable to parse data from %s: %w", HumanReadableLocation(location), err)
 	}
 
 	return InputFile{
@@ -188,7 +187,7 @@ func LoadFile(location string) (InputFile, error) {
 func LoadDirectory(location string) (InputFile, error) {
 	files, err := os.ReadDir(location)
 	if err != nil {
-		return InputFile{}, wrap.Errorf(err, "failed to read files in directory %s", location)
+		return InputFile{}, fmt.Errorf("failed to read files in directory %s: %w", location, err)
 	}
 
 	sort.Slice(files, func(i, j int) bool {
@@ -207,7 +206,7 @@ func LoadDirectory(location string) (InputFile, error) {
 
 		docs, err := LoadDocuments(bytes)
 		if err != nil {
-			return InputFile{}, wrap.Errorf(err, "failed to read %s", filepath.Join(location, file.Name()))
+			return InputFile{}, fmt.Errorf("failed to read %s: %w", filepath.Join(location, file.Name()), err)
 		}
 
 		result.Documents = append(result.Documents, docs...)
