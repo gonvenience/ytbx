@@ -7,8 +7,7 @@ require (
 	github.com/gonvenience/bunt v1.3.5
 	github.com/gonvenience/neat v1.3.12
 	github.com/gonvenience/text v1.0.7
-	github.com/gonvenience/wrap v1.2.0
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.29.0
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
@@ -19,6 +18,7 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gonvenience/term v1.0.2 // indirect
+	github.com/gonvenience/wrap v1.2.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20230323073829-e72429f035bd // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
