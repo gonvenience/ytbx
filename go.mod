@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/gonvenience/bunt v1.3.5
-	github.com/gonvenience/neat v1.3.12
+	github.com/gonvenience/neat v1.3.13
 	github.com/gonvenience/text v1.0.7
 	github.com/gorilla/mux v1.8.1
 	github.com/onsi/ginkgo/v2 v2.15.0
