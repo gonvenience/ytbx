@@ -8,7 +8,7 @@ require (
 	github.com/gonvenience/neat v1.3.13
 	github.com/gonvenience/text v1.0.7
 	github.com/gorilla/mux v1.8.1
-	github.com/onsi/ginkgo/v2 v2.19.1
+	github.com/onsi/ginkgo/v2 v2.20.0
 	github.com/onsi/gomega v1.34.1
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
 	gopkg.in/yaml.v3 v3.0.1
@@ -20,7 +20,7 @@ require (
 	github.com/gonvenience/term v1.0.2 // indirect
 	github.com/gonvenience/wrap v1.2.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/pprof v0.0.0-20240424215950-a892ee059fd6 // indirect
+	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-ciede2000 v0.0.0-20170301095244-782e8c62fec3 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
