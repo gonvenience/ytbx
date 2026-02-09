@@ -3,7 +3,7 @@ module github.com/gonvenience/ytbx
 go 1.24.0
 
 require (
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.6.0
 	github.com/gonvenience/bunt v1.4.3
 	github.com/gonvenience/neat v1.3.17
 	github.com/gonvenience/text v1.0.10
