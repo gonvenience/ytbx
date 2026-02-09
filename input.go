@@ -36,7 +36,7 @@ import (
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/text"
 	ordered "github.com/virtuald/go-ordered-json"
-	yamlv3 "gopkg.in/yaml.v3"
+	yamlv3 "go.yaml.in/yaml/v3"
 )
 
 // PreserveKeyOrderInJSON specifies whether a special library is used to decode
