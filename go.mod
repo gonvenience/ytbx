@@ -1,6 +1,6 @@
 module github.com/gonvenience/ytbx
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/BurntSushi/toml v1.6.0
@@ -27,7 +27,7 @@ require (
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/term v0.40.0 // indirect
