@@ -32,6 +32,8 @@ import (
 	. "github.com/gorilla/mux"
 
 	. "github.com/gonvenience/ytbx"
+
+	yamlv3 "go.yaml.in/yaml/v3"
 )
 
 var _ = Describe("Input test cases", func() {
@@ -108,5 +110,25 @@ var _ = Describe("Input test cases", func() {
 			Expect(rootMap.Content[0].Value).To(BeEquivalentTo("constraint"))
 			Expect(rootMap.Content[2].Value).To(BeEquivalentTo("override"))
 		})
+	})
+
+	Context("Edge Cases", func() {
+		DescribeTable("should load empty YAML documents semantically correct",
+			func(in string) {
+				one, err := LoadDocuments([]byte(in))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(one).To(HaveLen(1))
+				Expect(one[0].Content).To(HaveLen(1))
+				Expect(one[0].Content[0].Kind).To(Equal(yamlv3.ScalarNode))
+				Expect(one[0].Content[0].Tag).To(Equal("!!null"))
+			},
+
+			Entry("empty", ""),
+			Entry("document separator", "---"),
+			Entry("document separator and whitespace", "---\n"),
+			Entry("nothing, really", "\n"),
+			Entry("just spaces", "  "),
+			Entry("null", "null"),
+		)
 	})
 })

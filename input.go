@@ -221,6 +221,19 @@ func LoadDirectory(location string) (InputFile, error) {
 // depending on the input will either use `LoadTOMLDocuments`,
 // `LoadJSONDocuments`, or `LoadYAMLDocuments`.
 func LoadDocuments(input []byte) ([]*yamlv3.Node, error) {
+	// Special case to quickly rule out empty documents
+	// Ref: https://yaml.org/spec/1.2.2/#72-empty-nodes
+	// Ref: https://yaml.org/spec/1.2.2/#912-document-markers
+	// Ref: https://yaml.org/spec/1.2.2/#1032-tag-resolution
+	// > Empty nodes are interpreted as null values
+	if isEmpty(input) {
+		return []*yamlv3.Node{{
+			Kind: yamlv3.DocumentNode,
+			Content: []*yamlv3.Node{
+				{Kind: yamlv3.ScalarNode, Tag: "!!null"},
+			}}}, nil
+	}
+
 	// There is no easy check whether the input data is TOML format, this is
 	// why there is currently no other option than simply trying to parse it.
 	if toml, err := LoadTOMLDocuments(input); err == nil {
@@ -349,4 +362,9 @@ func getBytesFromLocation(location string) ([]byte, error) {
 // than a file.
 func IsStdin(location string) bool {
 	return strings.TrimSpace(location) == "-"
+}
+
+func isEmpty(input []byte) bool {
+	var foo = strings.TrimSpace(string(input))
+	return foo == "" || foo == "---"
 }
