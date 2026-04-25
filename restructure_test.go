@@ -105,5 +105,26 @@ var _ = Describe("Restructure order of map keys", func() {
 				Expect(keys).To(BeEquivalentTo([]string{"name", "release", "list", "some"}))
 			})
 		})
+
+		Context("that is Kubernetes like schema", func() {
+			Context("e.g. kustomization.yaml file", func() {
+				BeforeEach(func() {
+					example = yml(assets("kustomize/kustomization.yaml"))
+					RestructureObject(example)
+				})
+
+				JustBeforeEach(func() {
+					keys, err = ListStringKeys(example.Content[0])
+				})
+
+				It("should not error", func() {
+					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("should have the expected order of fields", func() {
+					Expect(keys).To(Equal([]string{"apiVersion", "kind", "resources", "configMapGenerator"}))
+				})
+			})
+		})
 	})
 })
