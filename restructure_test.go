@@ -25,48 +25,85 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/gonvenience/ytbx"
+
+	"go.yaml.in/yaml/v3"
 )
 
 var _ = Describe("Restructure order of map keys", func() {
-	Context("YAML MapSlice key reordering of the MapSlice itself", func() {
-		It("should restructure Concourse root level keys", func() {
-			example := yml("{ groups: [], jobs: [], resources: [], resource_types: [] }")
-			RestructureObject(example)
+	var example *yaml.Node
 
-			keys, err := ListStringKeys(example)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(keys).To(BeEquivalentTo([]string{"jobs", "resources", "resource_types", "groups"}))
+	var keys []string
+	var err error
+
+	Context("with an input example", func() {
+		JustBeforeEach(func() {
+			keys, err = ListStringKeys(example)
 		})
 
-		It("should restructure Concourse resource and resource_type keys", func() {
-			example := yml("{ source: {}, name: {}, type: {}, privileged: {} }")
-			RestructureObject(example)
+		Context("that is a Concourse like schema", func() {
+			Context("at document root level", func() {
+				BeforeEach(func() {
+					example = yml("{ groups: [], jobs: [], resources: [], resource_types: [] }")
+					RestructureObject(example)
+				})
 
-			keys, err := ListStringKeys(example)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(keys).To(BeEquivalentTo([]string{"name", "type", "source", "privileged"}))
+				It("should not error", func() {
+					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("should have the expected order of fields", func() {
+					Expect(keys).To(BeEquivalentTo([]string{"jobs", "resources", "resource_types", "groups"}))
+				})
+			})
+
+			Context("at task level", func() {
+				BeforeEach(func() {
+					example = yml("{ source: {}, name: {}, type: {}, privileged: {} }")
+					RestructureObject(example)
+				})
+
+				It("should not error", func() {
+					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("should have the expected order of fields", func() {
+					Expect(keys).To(BeEquivalentTo([]string{"name", "type", "source", "privileged"}))
+				})
+			})
+
+			Context("at document root level inside the resources list", func() {
+				BeforeEach(func() {
+					example = yml("{ resources: [ { privileged: false, source: { branch: foo, paths: [] }, name: myname, type: mytype } ] }")
+					RestructureObject(example)
+				})
+
+				JustBeforeEach(func() {
+					keys, err = ListStringKeys(example.Content[1].Content[0])
+				})
+
+				It("should not error", func() {
+					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("should have the expected order of fields", func() {
+					Expect(keys).To(BeEquivalentTo([]string{"name", "type", "source", "privileged"}))
+				})
+			})
 		})
-	})
 
-	Context("YAML MapSlice key reordering of the MapSlice values", func() {
-		It("should restructure Concourse resource keys as part as part of a MapSlice value", func() {
-			example := yml("{ resources: [ { privileged: false, source: { branch: foo, paths: [] }, name: myname, type: mytype } ] }")
-			RestructureObject(example)
+		Context("that has no particular schema", func() {
+			BeforeEach(func() {
+				example = yml(`{"list":["one","two","three"], "some":{"deep":{"structure":{"where":{"you":{"loose":{"focus":{"one":1,"two":2}}}}}}}, "name":"here", "release":"this"}`)
+				RestructureObject(example)
+			})
 
-			keys, err := ListStringKeys(example.Content[1].Content[0])
-			Expect(err).ToNot(HaveOccurred())
-			Expect(keys).To(BeEquivalentTo([]string{"name", "type", "source", "privileged"}))
-		})
-	})
+			It("should not error", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
 
-	Context("Restructure code tries to rearrange even unknown keys", func() {
-		It("should reorder map keys in a somehow more readable way", func() {
-			example := yml(`{"list":["one","two","three"], "some":{"deep":{"structure":{"where":{"you":{"loose":{"focus":{"one":1,"two":2}}}}}}}, "name":"here", "release":"this"}`)
-			RestructureObject(example)
-
-			keys, err := ListStringKeys(example)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(keys).To(BeEquivalentTo([]string{"name", "release", "list", "some"}))
+			It("should have the expected order of fields", func() {
+				Expect(keys).To(BeEquivalentTo([]string{"name", "release", "list", "some"}))
+			})
 		})
 	})
 })
